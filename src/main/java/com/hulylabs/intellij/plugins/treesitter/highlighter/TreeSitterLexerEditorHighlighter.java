@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, PrioritizedDocumentListener {
-    private final EditorColorsScheme myScheme;
+    private EditorColorsScheme myScheme;
     private final Language myLanguage;
     @NotNull
     private final TreeSitterSyntaxHighlighter myHighlighter;
@@ -85,6 +85,12 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
     @Override
     public void setEditor(@NotNull HighlighterClient editor) {
         this.myEditor = editor;
+    }
+
+    @Override
+    public void setColorScheme(@NotNull EditorColorsScheme scheme) {
+        myScheme = scheme;
+        myAttributesMap.clear();
     }
 
     private HighlighterClient getClient() {
