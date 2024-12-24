@@ -4,6 +4,7 @@
 (primitive_type) @type.builtin
 (field_identifier) @variable.member
 (shorthand_field_identifier) @variable.member
+(shorthand_field_initializer) @variable.member
 (self) @variable.builtin
 "_" @character.special
 (crate) @module
@@ -106,3 +107,5 @@
 (block_comment) @comment
 (outer_doc_comment_marker) @comment
 (inner_doc_comment_marker) @comment
+(unit_type) @type.builtin
+(unit_expression) @constant.builtin
