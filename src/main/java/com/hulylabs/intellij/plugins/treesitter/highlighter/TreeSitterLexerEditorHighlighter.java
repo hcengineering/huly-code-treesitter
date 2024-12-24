@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, PrioritizedDocumentListener {
-    private static final Logger LOG = Logger.getInstance(TreeSitterLexerEditorHighlighter.class);
     private final EditorColorsScheme myScheme;
     private final Language myLanguage;
     @NotNull

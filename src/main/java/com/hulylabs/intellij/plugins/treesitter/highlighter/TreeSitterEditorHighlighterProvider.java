@@ -1,6 +1,5 @@
 package com.hulylabs.intellij.plugins.treesitter.highlighter;
 
-import com.hulylabs.intellij.plugins.treesitter.TreeSitterHighlighterFactory;
 import com.hulylabs.treesitter.language.Language;
 import com.hulylabs.treesitter.language.LanguageRegistry;
 import com.intellij.openapi.application.ApplicationManager;

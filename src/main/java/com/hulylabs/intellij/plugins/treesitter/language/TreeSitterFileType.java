@@ -3,12 +3,10 @@ package com.hulylabs.intellij.plugins.treesitter.language;
 import com.hulylabs.treesitter.language.LanguageRegistry;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileTypes.*;
 import com.intellij.openapi.fileTypes.ex.FileTypeIdentifiableByVirtualFile;
 import com.intellij.openapi.fileTypes.impl.DetectedByContentFileType;
 import com.intellij.openapi.util.NlsContexts;
-import com.intellij.openapi.util.NlsSafe;
 import com.intellij.openapi.util.io.ByteSequence;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NonNls;
@@ -35,7 +33,7 @@ public class TreeSitterFileType extends LanguageFileType implements FileTypeIden
     }
 
     @Override
-    public @NlsSafe @NotNull String getDefaultExtension() {
+    public @NotNull String getDefaultExtension() {
         return "";
     }
 

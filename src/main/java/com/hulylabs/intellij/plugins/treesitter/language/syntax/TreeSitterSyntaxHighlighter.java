@@ -9,7 +9,6 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterBase;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -21,30 +20,6 @@ public class TreeSitterSyntaxHighlighter extends SyntaxHighlighterBase {
     private final TextAttributesKey[][] attributes;
     private final Set<Integer> knownSymbols;
     private TreeSitterLexer lexer;
-
-    public final static class Highlight {
-        private final String symbolName;
-        private final boolean isNamed;
-        private final String captureName;
-
-        public Highlight(String symbolName, boolean isNamed, String captureName) {
-            this.symbolName = symbolName;
-            this.isNamed = isNamed;
-            this.captureName = captureName;
-        }
-
-        public String getSymbolName() {
-            return symbolName;
-        }
-
-        public boolean isNamed() {
-            return isNamed;
-        }
-
-        public String getCaptureName() {
-            return captureName;
-        }
-    }
 
     public TreeSitterSyntaxHighlighter(Language language, Map<LanguageSymbol, String> highlights) {
         super();
@@ -72,7 +47,7 @@ public class TreeSitterSyntaxHighlighter extends SyntaxHighlighterBase {
         if (tokenType instanceof TreeSitterElementType) {
             TreeSitterElementType treeSitterElementType = (TreeSitterElementType) tokenType;
             int tokenSymbol = treeSitterElementType.getTreeSitterSymbol();
-            TextAttributesKey[] symbolAttributes = null;
+            TextAttributesKey[] symbolAttributes;
             symbolAttributes = this.attributes[tokenSymbol];
             if (!treeSitterElementType.isNodeStart() && symbolAttributes != null) {
                 return symbolAttributes;

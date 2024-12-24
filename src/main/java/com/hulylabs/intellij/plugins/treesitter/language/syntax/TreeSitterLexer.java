@@ -14,7 +14,6 @@ import java.util.Objects;
 import java.util.Set;
 
 public class TreeSitterLexer extends LexerBase {
-    private final Logger LOG = Logger.getInstance(TreeSitterLexer.class);
     private final TSParser parser;
     private final Set<Integer> knownSymbols;
     private final Language language;
