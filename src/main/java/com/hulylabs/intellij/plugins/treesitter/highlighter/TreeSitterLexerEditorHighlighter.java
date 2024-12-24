@@ -1,3 +1,6 @@
+// Copyright 2024 Huly Labs
+// Includes code from IntelliJ IDEA Community Edition https://www.jetbrains.com/idea/
+// Copyright 2000-2023 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.hulylabs.intellij.plugins.treesitter.highlighter;
 
 import com.hulylabs.intellij.plugins.treesitter.language.syntax.TreeSitterLexer;
