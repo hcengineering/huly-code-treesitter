@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="intellij.platform.lang" />
+    <orderEntry type="module" module-name="intellij.platform.lang.impl" />
+    <orderEntry type="module" module-name="intellij.platform.ide.core.impl" />
+    <orderEntry type="module" module-name="intellij.platform.ide.util.io" />
+    <orderEntry type="module" module-name="intellij.platform.core.ui" />
+    <orderEntry type="module" module-name="intellij.platform.execution.impl" />
+    <orderEntry type="module-library">
+      <library name="tree-sitter-0.24.5">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/vendor/tree-sitter-0.24.5.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+      <library name="tree-sitter-0.24.5">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/vendor/tree-sitter-0.24.5.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+      <library name="tree-sitter-astro-master">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/vendor/tree-sitter-astro-master.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+      <library name="tree-sitter-javascript-0.23.1">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/vendor/tree-sitter-javascript-0.23.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+      <library name="tree-sitter-rust-0.23.2">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/vendor/tree-sitter-rust-0.23.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+      <library name="tree-sitter-svelte-1.0.2">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/vendor/tree-sitter-svelte-1.0.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+      <library name="tree-sitter-typescript-0.23.2">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/vendor/tree-sitter-typescript-0.23.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+      <library name="tree-sitter-zig-1.1.2">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/vendor/tree-sitter-zig-1.1.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+  </component>
+</module>
