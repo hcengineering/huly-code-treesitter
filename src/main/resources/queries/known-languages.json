@@ -1,0 +1,20 @@
+{
+  "rust": {
+    "extensions": ["rs"]
+  },
+  "zig": {
+    "extensions": ["zig"]
+  },
+  "typescript": {
+    "extensions": ["ts"]
+  },
+  "javascript": {
+    "extensions": ["js", "jsx"]
+  },
+  "svelte": {
+    "extensions": ["svelte"]
+  },
+  "astro": {
+    "extensions": ["astro"]
+  }
+}

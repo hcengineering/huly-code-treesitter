@@ -1,0 +1,19 @@
+<idea-plugin>
+    <id>com.hulylabs.TreeSitter</id>
+
+    <name>TreeSitter</name>
+
+    <vendor url="https://hulylabs.com/">Huly Labs</vendor>
+
+    <description>Tree-sitter based syntax highlighting and parsing</description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <colorSettingsPage implementation="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterColorSettingsPage"/>
+        <fileType name="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.language.TreeSitterFileType" fieldName="INSTANCE" language="TreeSitter"/>
+        <fileTypeDetector implementation="com.hulylabs.intellij.plugins.treesitter.language.TreeSitterFileType$TreeSitterFileTypeDetector" order="last"/>
+        <editorHighlighterProvider filetype="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.highlighter.TreeSitterEditorHighlighterProvider"/>
+    </extensions>
+</idea-plugin>

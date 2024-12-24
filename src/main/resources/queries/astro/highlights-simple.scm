@@ -1,0 +1,14 @@
+(tag_name) @tag
+(comment) @comment
+(attribute_name) @tag.attribute
+(text) @none
+"<" @tag.delimiter
+">" @tag.delimiter
+"</" @tag.delimiter
+"/>" @tag.delimiter
+"=" @operator
+(doctype) @constant
+"<!" @tag.delimiter
+"---" @punctuation.delimiter
+"{" @punctuation.special
+"}" @punctuation.special
