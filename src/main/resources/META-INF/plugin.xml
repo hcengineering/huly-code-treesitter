@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.hulylabs.TreeSitter</id>
 
-    <name>TreeSitter</name>
+    <name>Huly-Code-Treesitter</name>
 
     <vendor url="https://hulylabs.com/">Huly Labs</vendor>
 
