@@ -1,0 +1,114 @@
+<?xml version='1.0'?>
+<list>
+  <attributes>
+    <option name="ts.capture.variable"/>
+    <option name="ts.capture.variable.builtin">
+      <value>
+        <option name="FOREGROUND" value="CC7832"/>
+      </value>
+    </option>
+    <option name="ts.capture.variable.member"/>
+    <option name="ts.capture.variable.parameter"/>
+    <option name="ts.capture.variable.parameter.builtin">
+      <value>
+        <option name="FOREGROUND" value="CC7832"/>
+      </value>
+    </option>
+    <option name="ts.capture.constant"/>
+    <option name="ts.capture.constant.builtin">
+      <value>
+        <option name="FOREGROUND" value="CC7832"/>
+      </value>
+    </option>
+    <option name="ts.capture.constant.macro"/>
+    <option name="ts.capture.module"/>
+    <option name="ts.capture.module.builtin">
+      <value>
+        <option name="FOREGROUND" value="CC7832"/>
+      </value>
+    </option>
+    <option name="ts.capture.label"/>
+    <option name="ts.capture.string"/>
+    <option name="ts.capture.string.documentation"/>
+    <option name="ts.capture.string.escape"/>
+    <option name="ts.capture.string.regexp"/>
+    <option name="ts.capture.string.special"/>
+    <option name="ts.capture.string.special.symbol"/>
+    <option name="ts.capture.string.special.url"/>
+    <option name="ts.capture.string.special.path"/>
+    <option name="ts.capture.character"/>
+    <option name="ts.capture.character.special"/>
+    <option name="ts.capture.boolean"/>
+    <option name="ts.capture.number"/>
+    <option name="ts.capture.number.float"/>
+    <option name="ts.capture.type"/>
+    <option name="ts.capture.type.builtin">
+      <value>
+        <option name="FOREGROUND" value="CC7832"/>
+      </value>
+    </option>
+    <option name="ts.capture.type.definition"/>
+    <option name="ts.capture.attribute"/>
+    <option name="ts.capture.attribute.builtin"/>
+    <option name="ts.capture.property"/>
+    <option name="ts.capture.property.builtin"/>
+    <option name="ts.capture.comment"/>
+    <option name="ts.capture.comment.documentation"/>
+    <option name="ts.capture.constructor"/>
+    <option name="ts.capture.constructor.builtin"/>
+    <option name="ts.capture.embedded"/>
+    <option name="ts.capture.error"/>
+    <option name="ts.capture.escape"/>
+    <option name="ts.capture.function"/>
+    <option name="ts.capture.function.builtin"/>
+    <option name="ts.capture.keyword"/>
+    <option name="ts.capture.operator"/>
+    <option name="ts.capture.tag"/>
+    <option name="ts.capture.tag.attribute"/>
+    <option name="ts.capture.punctuation"/>
+    <option name="ts.capture.punctuation.bracket"/>
+    <option name="ts.capture.punctuation.delimiter"/>
+    <option name="ts.capture.punctuation.special"/>
+    <option name="ts.capture.punctuation.bracket.parentheses"/>
+    <option name="ts.capture.punctuation.bracket.braces"/>
+    <option name="ts.capture.punctuation.delimiter.comma"/>
+    <option name="ts.capture.markup.bold">
+      <value>
+        <option name="FONT_TYPE" value="1"/>
+      </value>
+    </option>
+    <option name="ts.capture.markup.heading">
+      <value>
+        <option name="FONT_TYPE" value="1"/>
+      </value>
+    </option>
+    <option name="ts.capture.markup.italic">
+      <value>
+        <option name="FONT_TYPE" value="2"/>
+      </value>
+    </option>
+    <option name="ts.capture.markup.link"/>
+    <option name="ts.capture.markup.link.url">
+      <value>
+        <option name="FOREGROUND" value="287BDE"/>
+        <option name="EFFECT_COLOR" value="287BDE"/>
+        <option name="EFFECT_TYPE" value="0"/>
+      </value>
+    </option>
+    <option name="ts.capture.markup.list"/>
+    <option name="ts.capture.markup.list.checked"/>
+    <option name="ts.capture.markup.list.numbered"/>
+    <option name="ts.capture.markup.list.unchecked"/>
+    <option name="ts.capture.markup.list.unnumbered"/>
+    <option name="ts.capture.markup.quote"/>
+    <option name="ts.capture.markup.raw"/>
+    <option name="ts.capture.markup.raw.block"/>
+    <option name="ts.capture.markup.raw.inline"/>
+    <option name="ts.capture.markup.strikethrough">
+      <value>
+        <option name="EFFECT_COLOR"/>
+        <option name="EFFECT_TYPE" value="3"/>
+      </value>
+    </option>
+  </attributes>
+</list>

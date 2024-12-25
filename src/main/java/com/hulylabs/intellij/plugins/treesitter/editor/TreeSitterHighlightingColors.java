@@ -1,6 +1,7 @@
 package com.hulylabs.intellij.plugins.treesitter.editor;
 
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors;
+import com.intellij.openapi.editor.HighlighterColors;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 
 import java.util.Collection;
@@ -11,7 +12,7 @@ public class TreeSitterHighlightingColors {
     // Identifiers
     public static final TextAttributesKey VARIABLE = TextAttributesKey.createTextAttributesKey("ts.capture.variable", DefaultLanguageHighlighterColors.LOCAL_VARIABLE);
     public static final TextAttributesKey VARIABLE_BUILTIN = TextAttributesKey.createTextAttributesKey("ts.capture.variable.builtin", DefaultLanguageHighlighterColors.GLOBAL_VARIABLE);
-    public static final TextAttributesKey VARIABLE_MEMBER = TextAttributesKey.createTextAttributesKey("ts.capture.variable.member", VARIABLE);
+    public static final TextAttributesKey VARIABLE_MEMBER = TextAttributesKey.createTextAttributesKey("ts.capture.variable.member", DefaultLanguageHighlighterColors.INSTANCE_FIELD);
     public static final TextAttributesKey VARIABLE_PARAMETER = TextAttributesKey.createTextAttributesKey("ts.capture.variable.parameter", DefaultLanguageHighlighterColors.PARAMETER);
     public static final TextAttributesKey VARIABLE_PARAMETER_BUILTIN = TextAttributesKey.createTextAttributesKey("ts.capture.variable.parameter.builtin", VARIABLE_PARAMETER);
     public static final TextAttributesKey CONSTANT = TextAttributesKey.createTextAttributesKey("ts.capture.constant", DefaultLanguageHighlighterColors.CONSTANT);
@@ -32,12 +33,12 @@ public class TreeSitterHighlightingColors {
     public static final TextAttributesKey STRING_SPECIAL_PATH = TextAttributesKey.createTextAttributesKey("ts.capture.string.special.path", STRING_SPECIAL);
     public static final TextAttributesKey CHARACTER = TextAttributesKey.createTextAttributesKey("ts.capture.character", DefaultLanguageHighlighterColors.STRING);
     public static final TextAttributesKey CHARACTER_SPECIAL = TextAttributesKey.createTextAttributesKey("ts.capture.character.special", CHARACTER);
-    public static final TextAttributesKey BOOLEAN = TextAttributesKey.createTextAttributesKey("ts.capture.boolean", DefaultLanguageHighlighterColors.CONSTANT);
+    public static final TextAttributesKey BOOLEAN = TextAttributesKey.createTextAttributesKey("ts.capture.boolean", DefaultLanguageHighlighterColors.KEYWORD);
     public static final TextAttributesKey NUMBER = TextAttributesKey.createTextAttributesKey("ts.capture.number", DefaultLanguageHighlighterColors.NUMBER);
     public static final TextAttributesKey FLOAT = TextAttributesKey.createTextAttributesKey("ts.capture.number.float", NUMBER);
 
     // Types
-    public static final TextAttributesKey TYPE = TextAttributesKey.createTextAttributesKey("ts.capture.type", DefaultLanguageHighlighterColors.IDENTIFIER);
+    public static final TextAttributesKey TYPE = TextAttributesKey.createTextAttributesKey("ts.capture.type", DefaultLanguageHighlighterColors.CLASS_NAME);
     public static final TextAttributesKey TYPE_BUILTIN = TextAttributesKey.createTextAttributesKey("ts.capture.type.builtin", TYPE);
     public static final TextAttributesKey TYPE_DEFINITION = TextAttributesKey.createTextAttributesKey("ts.capture.type.definition", TYPE);
     public static final TextAttributesKey ATTRIBUTE = TextAttributesKey.createTextAttributesKey("ts.capture.attribute", DefaultLanguageHighlighterColors.METADATA);
@@ -50,38 +51,42 @@ public class TreeSitterHighlightingColors {
 
     public static final TextAttributesKey CONSTRUCTOR = TextAttributesKey.createTextAttributesKey("ts.capture.constructor", DefaultLanguageHighlighterColors.FUNCTION_CALL);
     public static final TextAttributesKey CONSTRUCTOR_BUILTIN = TextAttributesKey.createTextAttributesKey("ts.capture.constructor.builtin", DefaultLanguageHighlighterColors.FUNCTION_CALL);
-    public static final TextAttributesKey EMBEDDED = TextAttributesKey.createTextAttributesKey("ts.capture.embedded", DefaultLanguageHighlighterColors.FUNCTION_CALL); //TODO
-    public static final TextAttributesKey ERROR = TextAttributesKey.createTextAttributesKey("ts.capture.error", DefaultLanguageHighlighterColors.INVALID_STRING_ESCAPE); //TODO
+    public static final TextAttributesKey EMBEDDED = TextAttributesKey.createTextAttributesKey("ts.capture.embedded", (TextAttributesKey) null);
+    public static final TextAttributesKey ERROR = TextAttributesKey.createTextAttributesKey("ts.capture.error", (TextAttributesKey) null);
     public static final TextAttributesKey ESCAPE = TextAttributesKey.createTextAttributesKey("ts.capture.escape", DefaultLanguageHighlighterColors.VALID_STRING_ESCAPE);
     public static final TextAttributesKey FUNCTION = TextAttributesKey.createTextAttributesKey("ts.capture.function", DefaultLanguageHighlighterColors.FUNCTION_DECLARATION);
     public static final TextAttributesKey FUNCTION_BUILTIN = TextAttributesKey.createTextAttributesKey("ts.capture.function.builtin", DefaultLanguageHighlighterColors.STATIC_METHOD);
+    public static final TextAttributesKey FUNCTION_CALL = TextAttributesKey.createTextAttributesKey("ts.capture.function.call", DefaultLanguageHighlighterColors.FUNCTION_CALL);
     public static final TextAttributesKey KEYWORD = TextAttributesKey.createTextAttributesKey("ts.capture.keyword", DefaultLanguageHighlighterColors.KEYWORD);
     public static final TextAttributesKey OPERATOR = TextAttributesKey.createTextAttributesKey("ts.capture.operator", DefaultLanguageHighlighterColors.OPERATION_SIGN);
     public static final TextAttributesKey TAG = TextAttributesKey.createTextAttributesKey("ts.capture.tag", DefaultLanguageHighlighterColors.MARKUP_TAG);
+    public static final TextAttributesKey TAG_ATTRIBUTE = TextAttributesKey.createTextAttributesKey("ts.capture.tag.attribute", DefaultLanguageHighlighterColors.MARKUP_ATTRIBUTE);
 
     // Punctuation
-    public static final TextAttributesKey PUNCTUATION = TextAttributesKey.createTextAttributesKey("ts.capture.punctuation", DefaultLanguageHighlighterColors.COMMA);
+    public static final TextAttributesKey PUNCTUATION = TextAttributesKey.createTextAttributesKey("ts.capture.punctuation", DefaultLanguageHighlighterColors.DOT);
     public static final TextAttributesKey PUNCTUATION_BRACKET = TextAttributesKey.createTextAttributesKey("ts.capture.punctuation.bracket", DefaultLanguageHighlighterColors.BRACKETS);
     public static final TextAttributesKey PUNCTUATION_DELIMITER = TextAttributesKey.createTextAttributesKey("ts.capture.punctuation.delimiter", DefaultLanguageHighlighterColors.DOT);
     public static final TextAttributesKey PUNCTUATION_SPECIAL = TextAttributesKey.createTextAttributesKey("ts.capture.punctuation.special", DefaultLanguageHighlighterColors.COMMA);
+    public static final TextAttributesKey PUNCTUATION_PARENTHESES = TextAttributesKey.createTextAttributesKey("ts.capture.punctuation.bracket.parentheses", DefaultLanguageHighlighterColors.PARENTHESES);
+    public static final TextAttributesKey PUNCTUATION_BRACES = TextAttributesKey.createTextAttributesKey("ts.capture.punctuation.bracket.braces", DefaultLanguageHighlighterColors.BRACES);
+    public static final TextAttributesKey PUNCTUATION_COMMA = TextAttributesKey.createTextAttributesKey("ts.capture.punctuation.delimiter.comma", DefaultLanguageHighlighterColors.COMMA);
 
     // Markup
-    public static final TextAttributesKey MARKUP = TextAttributesKey.createTextAttributesKey("ts.capture.markup", DefaultLanguageHighlighterColors.MARKUP_TAG);
-    public static final TextAttributesKey MARKUP_BOLD = TextAttributesKey.createTextAttributesKey("ts.capture.markup.bold", MARKUP);
-    public static final TextAttributesKey MARKUP_HEADING = TextAttributesKey.createTextAttributesKey("ts.capture.markup.heading", MARKUP);
-    public static final TextAttributesKey MARKUP_ITALIC = TextAttributesKey.createTextAttributesKey("ts.capture.markup.italic", MARKUP);
-    public static final TextAttributesKey MARKUP_LINK = TextAttributesKey.createTextAttributesKey("ts.capture.markup.link", MARKUP);
-    public static final TextAttributesKey MARKUP_LINK_URL = TextAttributesKey.createTextAttributesKey("ts.capture.markup.link.url", MARKUP);
-    public static final TextAttributesKey MARKUP_LIST = TextAttributesKey.createTextAttributesKey("ts.capture.markup.list", MARKUP);
-    public static final TextAttributesKey MARKUP_LIST_CHECKED = TextAttributesKey.createTextAttributesKey("ts.capture.markup.list.checked", MARKUP);
-    public static final TextAttributesKey MARKUP_LIST_NUMBERED = TextAttributesKey.createTextAttributesKey("ts.capture.markup.list.numbered", MARKUP);
-    public static final TextAttributesKey MARKUP_LIST_UNCHECKED = TextAttributesKey.createTextAttributesKey("ts.capture.markup.list.unchecked", MARKUP);
-    public static final TextAttributesKey MARKUP_LIST_UNNUMBERED = TextAttributesKey.createTextAttributesKey("ts.capture.markup.list.unnumbered", MARKUP);
-    public static final TextAttributesKey MARKUP_QUOTE = TextAttributesKey.createTextAttributesKey("ts.capture.markup.quote", MARKUP);
-    public static final TextAttributesKey MARKUP_RAW = TextAttributesKey.createTextAttributesKey("ts.capture.markup.raw", MARKUP);
-    public static final TextAttributesKey MARKUP_RAW_BLOCK = TextAttributesKey.createTextAttributesKey("ts.capture.markup.raw.block", MARKUP);
-    public static final TextAttributesKey MARKUP_RAW_INLINE = TextAttributesKey.createTextAttributesKey("ts.capture.markup.raw.inline", MARKUP);
-    public static final TextAttributesKey MARKUP_STRIKETHROUGH = TextAttributesKey.createTextAttributesKey("ts.capture.markup.strikethrough", MARKUP);
+    public static final TextAttributesKey MARKUP_BOLD = TextAttributesKey.createTextAttributesKey("ts.capture.markup.bold", HighlighterColors.TEXT);
+    public static final TextAttributesKey MARKUP_HEADING = TextAttributesKey.createTextAttributesKey("ts.capture.markup.heading", HighlighterColors.TEXT);
+    public static final TextAttributesKey MARKUP_ITALIC = TextAttributesKey.createTextAttributesKey("ts.capture.markup.italic", HighlighterColors.TEXT);
+    public static final TextAttributesKey MARKUP_LINK = TextAttributesKey.createTextAttributesKey("ts.capture.markup.link", DefaultLanguageHighlighterColors.STRING);
+    public static final TextAttributesKey MARKUP_LINK_URL = TextAttributesKey.createTextAttributesKey("ts.capture.markup.link.url", MARKUP_LINK);
+    public static final TextAttributesKey MARKUP_LIST = TextAttributesKey.createTextAttributesKey("ts.capture.markup.list", HighlighterColors.TEXT);
+    public static final TextAttributesKey MARKUP_LIST_CHECKED = TextAttributesKey.createTextAttributesKey("ts.capture.markup.list.checked", MARKUP_LIST);
+    public static final TextAttributesKey MARKUP_LIST_NUMBERED = TextAttributesKey.createTextAttributesKey("ts.capture.markup.list.numbered", MARKUP_LIST);
+    public static final TextAttributesKey MARKUP_LIST_UNCHECKED = TextAttributesKey.createTextAttributesKey("ts.capture.markup.list.unchecked", MARKUP_LIST);
+    public static final TextAttributesKey MARKUP_LIST_UNNUMBERED = TextAttributesKey.createTextAttributesKey("ts.capture.markup.list.unnumbered", MARKUP_LIST);
+    public static final TextAttributesKey MARKUP_QUOTE = TextAttributesKey.createTextAttributesKey("ts.capture.markup.quote", HighlighterColors.TEXT);
+    public static final TextAttributesKey MARKUP_RAW = TextAttributesKey.createTextAttributesKey("ts.capture.markup.raw", HighlighterColors.TEXT);
+    public static final TextAttributesKey MARKUP_RAW_BLOCK = TextAttributesKey.createTextAttributesKey("ts.capture.markup.raw.block", HighlighterColors.TEXT);
+    public static final TextAttributesKey MARKUP_RAW_INLINE = TextAttributesKey.createTextAttributesKey("ts.capture.markup.raw.inline", HighlighterColors.TEXT);
+    public static final TextAttributesKey MARKUP_STRIKETHROUGH = TextAttributesKey.createTextAttributesKey("ts.capture.markup.strikethrough", HighlighterColors.TEXT);
     private static TreeSitterHighlightingColors INSTANCE;
 
     public static TreeSitterHighlightingColors getInstance() {
@@ -140,18 +145,22 @@ public class TreeSitterHighlightingColors {
         addTextAttributesKey(ESCAPE);
         addTextAttributesKey(FUNCTION);
         addTextAttributesKey(FUNCTION_BUILTIN);
+        addTextAttributesKey(FUNCTION_CALL);
         addTextAttributesKey(KEYWORD);
         addTextAttributesKey(OPERATOR);
         addTextAttributesKey(TAG);
+        addTextAttributesKey(TAG_ATTRIBUTE);
 
         // Punctuation
         addTextAttributesKey(PUNCTUATION);
         addTextAttributesKey(PUNCTUATION_BRACKET);
         addTextAttributesKey(PUNCTUATION_DELIMITER);
         addTextAttributesKey(PUNCTUATION_SPECIAL);
+        addTextAttributesKey(PUNCTUATION_PARENTHESES);
+        addTextAttributesKey(PUNCTUATION_BRACES);
+        addTextAttributesKey(PUNCTUATION_COMMA);
 
         // Markup
-        addTextAttributesKey(MARKUP);
         addTextAttributesKey(MARKUP_BOLD);
         addTextAttributesKey(MARKUP_HEADING);
         addTextAttributesKey(MARKUP_ITALIC);

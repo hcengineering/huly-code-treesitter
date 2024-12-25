@@ -73,9 +73,11 @@ public class TreeSitterColorSettingsPage implements ColorSettingsPage, DisplayPr
         new AttributesDescriptor("Punctuation//Bracket", TreeSitterHighlightingColors.PUNCTUATION_BRACKET),
         new AttributesDescriptor("Punctuation//Delimiter", TreeSitterHighlightingColors.PUNCTUATION_DELIMITER),
         new AttributesDescriptor("Punctuation//Special", TreeSitterHighlightingColors.PUNCTUATION_SPECIAL),
+            new AttributesDescriptor("Punctuation//Comma", TreeSitterHighlightingColors.PUNCTUATION_COMMA),
+        new AttributesDescriptor("Punctuation//Parentheses", TreeSitterHighlightingColors.PUNCTUATION_PARENTHESES),
+        new AttributesDescriptor("Punctuation//Braces", TreeSitterHighlightingColors.PUNCTUATION_BRACES),
 
         // Markup
-        new AttributesDescriptor("Markup", TreeSitterHighlightingColors.MARKUP),
         new AttributesDescriptor("Markup//Bold", TreeSitterHighlightingColors.MARKUP_BOLD),
         new AttributesDescriptor("Markup//Heading", TreeSitterHighlightingColors.MARKUP_HEADING),
         new AttributesDescriptor("Markup//Italic", TreeSitterHighlightingColors.MARKUP_ITALIC),
