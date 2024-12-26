@@ -262,41 +262,52 @@ public class TreeSitterLexer extends LexerBase {
 
     @Override
     public void advance() {
-        currentOffset = currentTokenEnd;
-        if (currentOffset >= endOffset) {
-            currentToken = null;
-            currentTokenStart = currentOffset;
-            currentTokenEnd = endOffset;
-            return;
-        }
-        if (currentToken == null) {
-            setupInitialState();
-            return;
-        }
-        if (nodeFinished) {
-            if (cursor.gotoNextSibling()) {
-                emitNextNode(cursor.currentNode());
-            } else {
-                cursor.gotoParent();
-                emitNodeEndToken(cursor.currentNode());
+        boolean repeatAdvance;
+        do {
+            repeatAdvance = false;
+            currentOffset = currentTokenEnd;
+            if (currentOffset >= endOffset) {
+                currentToken = null;
+                currentTokenStart = currentOffset;
+                currentTokenEnd = endOffset;
+                return;
             }
-        } else if (nodeStarted) {
-            if (node.getEndByte() / 2 > currentOffset) {
-                if (!cursor.gotoFirstChild()) {
-                    // Faulty state, node started with children, but cursor can't find any children
-                    currentOffset = Math.min(node.getEndByte() / 2, endOffset);
-                    emitNodeEndToken(node);
-                    return;
+            if (currentToken == null) {
+                setupInitialState();
+                return;
+            }
+            if (nodeFinished) {
+                if (cursor.gotoNextSibling()) {
+                    emitNextNode(cursor.currentNode());
+                } else {
+                    cursor.gotoParent();
+                    if (cursor.currentNode().getEndByte() / 2 > currentOffset) {
+                        emitNodeEndToken(cursor.currentNode());
+                    } else {
+                        this.node = cursor.currentNode();
+                        nodeStarted = true;
+                        nodeFinished = true;
+                        repeatAdvance = true;
+                    }
                 }
-                emitNextNode(cursor.currentNode());
-            }
-        } else {
-            if (node.getChildCount() > 0 && !knownSymbols.contains(language.getVisibleSymbolId(node.getSymbol()))) {
-                emitNodeStartToken(node);
+            } else if (nodeStarted) {
+                if (node.getEndByte() / 2 > currentOffset) {
+                    if (!cursor.gotoFirstChild()) {
+                        // Faulty state, node started with children, but cursor can't find any children
+                        currentOffset = Math.min(node.getEndByte() / 2, endOffset);
+                        emitNodeEndToken(node);
+                        return;
+                    }
+                    emitNextNode(cursor.currentNode());
+                }
             } else {
-                emitLeafNodeToken(node);
+                if (node.getChildCount() > 0 && !knownSymbols.contains(language.getVisibleSymbolId(node.getSymbol()))) {
+                    emitNodeStartToken(node);
+                } else {
+                    emitLeafNodeToken(node);
+                }
             }
-        }
+        } while (repeatAdvance);
     }
 
     @Override
