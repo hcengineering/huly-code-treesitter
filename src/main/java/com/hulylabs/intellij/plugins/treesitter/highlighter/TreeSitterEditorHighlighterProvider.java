@@ -36,14 +36,11 @@ public class TreeSitterEditorHighlighterProvider implements EditorHighlighterPro
             LanguageRegistry registry = ApplicationManager.getApplication().getService(LanguageRegistry.class);
             Language language = ApplicationManager.getApplication().getService(LanguageRegistry.class).getLanguage(extension);
             if (language != null) {
-                var highlights = registry.getLanguageHighlights(language);
-                if (highlights != null) {
-                    var highlighter = new TreeSitterLexerEditorHighlighter(language, highlights, colors);
-                    synchronized (highlighters) {
-                        highlighters.put(virtualFile.getUrl(), highlighter);
-                    }
-                    return highlighter;
+                var highlighter = new TreeSitterLexerEditorHighlighter(language, colors);
+                synchronized (highlighters) {
+                    highlighters.put(virtualFile.getUrl(), highlighter);
                 }
+                return highlighter;
             }
         }
         SyntaxHighlighter highlighter = SyntaxHighlighterFactory.getSyntaxHighlighter(fileType, project, virtualFile);

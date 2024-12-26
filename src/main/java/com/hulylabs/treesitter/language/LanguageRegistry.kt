@@ -19,8 +19,8 @@ class LanguageRegistry(
     private val coroutineScope: CoroutineScope,
 ) {
     private val LOG = Logger.getInstance(LanguageRegistry::class.java)
-    private val languageNames = HashMap<String, String>()
-    private val languageHighlights = HashMap<String, HashMap<LanguageSymbol, String>>()
+    private val extensions = HashMap<String, String>()
+    private val languages = HashMap<String, Language>()
 
     init {
         coroutineScope.launch {
@@ -28,12 +28,14 @@ class LanguageRegistry(
                 Language::class.java.getResource("/queries/known-languages.json")!!.readText()
             }
             val json = Json { ignoreUnknownKeys = true }
-            json.parseToJsonElement(text).jsonObject.forEach({ languageName, languageJson ->
+            val knownLanguagesJson = json.parseToJsonElement(text).jsonObject
+            val languageNames = knownLanguagesJson.keys
+            knownLanguagesJson.forEach({ languageName, languageJson ->
                 languageJson.jsonObject["extensions"]?.jsonArray?.forEach { extension ->
-                    languageNames[extension.jsonPrimitive.content] = languageName
+                    extensions[extension.jsonPrimitive.content] = languageName
                 }
             })
-            for (languageName in languageNames.values) {
+            for (languageName in languageNames) {
                 val highlightsText = withContext(Dispatchers.IO) {
                     Language::class.java.getResource("/queries/$languageName/highlights-simple.scm")?.readText()
                 }
@@ -41,35 +43,32 @@ class LanguageRegistry(
                     LOG.warn("No highlights-simple.scm found for $languageName")
                     continue
                 }
-                languageHighlights[languageName] = HashMap()
+                val languageHighlights = HashMap<LanguageSymbol, String>()
                 highlightsText.lineSequence().map { line -> line.trim().split(" ") }.forEach { split ->
                     val nodeName = split[0].substring(1, split[0].length - 1)
                     val isNamed = split[0].startsWith('(') && split[0].endsWith(')')
                     val captureName = split[1].substring(1)
-                    languageHighlights[languageName]!![LanguageSymbol(nodeName, isNamed)] = captureName
+                    languageHighlights[LanguageSymbol(nodeName, isNamed)] = captureName
                 }
+                val language = when (languageName) {
+                    "rust" -> Language(TreeSitterRust(), languageName, languageHighlights)
+                    "typescript" -> Language(TreeSitterTypescript(), languageName, languageHighlights)
+                    "zig" -> Language(TreeSitterZig(), languageName, languageHighlights)
+                    "svelte" -> Language(TreeSitterSvelte(), languageName, languageHighlights)
+                    "javascript" -> Language(TreeSitterJavascript(), languageName, languageHighlights)
+                    "astro" -> Language(TreeSitterAstro(), languageName, languageHighlights)
+                    else -> {
+                        LOG.warn("Unknown language: $languageName")
+                        null
+                    }
+                }
+                if (language == null) continue
+                languages[languageName] = language
             }
         }
     }
 
     fun getLanguage(extension: String): Language? {
-        languageNames[extension]?.let { languageName ->
-            when (languageName) {
-                "rust" -> return Language(TreeSitterRust(), languageName)
-                "typescript" -> return Language(TreeSitterTypescript(), languageName)
-                "zig" -> return Language(TreeSitterZig(), languageName)
-                "svelte" -> return Language(TreeSitterSvelte(), languageName)
-                "javascript" -> return Language(TreeSitterJavascript(), languageName)
-                "astro" -> return Language(TreeSitterAstro(), languageName)
-                else -> {
-                    LOG.warn("Unknown language: $languageName")
-                }
-            }
-        }
-        return null
-    }
-
-    fun getLanguageHighlights(language: Language): Map<LanguageSymbol, String>? {
-        return languageHighlights[language.name]
+        return extensions[extension]?.let { languageName -> languages[languageName] }
     }
 }

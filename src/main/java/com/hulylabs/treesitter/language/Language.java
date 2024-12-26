@@ -5,6 +5,8 @@ import org.treesitter.TSParser;
 import org.treesitter.TSSymbolType;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Language {
     private static final int ERROR_SYMBOL = 65535;
@@ -12,8 +14,9 @@ public class Language {
     private final String languageName;
     private final ArrayList<Integer> visibleSymbols;
     private final int[] visibleSymbolLookup;
+    private final HashMap<Integer, String> highlights;
 
-    public Language(TSLanguage language, String languageName) {
+    public Language(TSLanguage language, String languageName, HashMap<LanguageSymbol, String> highlights) {
         this.language = language;
         this.languageName = languageName;
         int symbolCount = language.symbolCount();
@@ -25,6 +28,11 @@ public class Language {
                 this.visibleSymbolLookup[i] = visibleSymbols.size();
                 this.visibleSymbols.add(i);
             }
+        }
+        this.highlights = new HashMap<>(highlights.size());
+        for (Map.Entry<LanguageSymbol, String> entry : highlights.entrySet()) {
+            LanguageSymbol symbol = entry.getKey();
+            this.highlights.put(symbolForName(symbol.getName(), symbol.isNamed()), entry.getValue());
         }
     }
 
@@ -51,5 +59,9 @@ public class Language {
             return id;
         }
         return this.visibleSymbolLookup[id];
+    }
+
+    public Map<Integer, String> getHighlights() {
+        return highlights;
     }
 }

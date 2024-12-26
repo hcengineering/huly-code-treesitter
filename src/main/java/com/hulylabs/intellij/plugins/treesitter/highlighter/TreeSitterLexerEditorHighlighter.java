@@ -6,7 +6,6 @@ package com.hulylabs.intellij.plugins.treesitter.highlighter;
 import com.hulylabs.intellij.plugins.treesitter.language.syntax.TreeSitterLexer;
 import com.hulylabs.intellij.plugins.treesitter.language.syntax.TreeSitterSyntaxHighlighter;
 import com.hulylabs.treesitter.language.Language;
-import com.hulylabs.treesitter.language.LanguageSymbol;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
@@ -44,9 +43,9 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
     private final Map<IElementType, TextAttributes> myAttributesMap = new HashMap<>();
     private final Map<IElementType, TextAttributesKey[]> myKeysMap = new HashMap<>();
 
-    public TreeSitterLexerEditorHighlighter(Language language, Map<LanguageSymbol, String> highlights, EditorColorsScheme scheme) {
+    public TreeSitterLexerEditorHighlighter(Language language, EditorColorsScheme scheme) {
         myLanguage = language;
-        myHighlighter = new TreeSitterSyntaxHighlighter(language, highlights);
+        myHighlighter = new TreeSitterSyntaxHighlighter(language);
         var knownSymbols = myHighlighter.getKnownSymbols();
         mySegments = createSegments();
         myScheme = scheme;
