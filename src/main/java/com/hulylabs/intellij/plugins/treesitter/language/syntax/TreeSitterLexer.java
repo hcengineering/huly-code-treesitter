@@ -291,15 +291,13 @@ public class TreeSitterLexer extends LexerBase {
                     }
                 }
             } else if (nodeStarted) {
-                if (node.getEndByte() / 2 > currentOffset) {
-                    if (!cursor.gotoFirstChild()) {
-                        // Faulty state, node started with children, but cursor can't find any children
-                        currentOffset = Math.min(node.getEndByte() / 2, endOffset);
-                        emitNodeEndToken(node);
-                        return;
-                    }
-                    emitNextNode(cursor.currentNode());
+                if (!cursor.gotoFirstChild()) {
+                    // Faulty state, node started with children, but cursor can't find any children
+                    currentOffset = Math.min(node.getEndByte() / 2, endOffset);
+                    emitNodeEndToken(node);
+                    return;
                 }
+                emitNextNode(cursor.currentNode());
             } else {
                 if (node.getChildCount() > 0 && !knownSymbols.contains(language.getVisibleSymbolId(node.getSymbol()))) {
                     emitNodeStartToken(node);
