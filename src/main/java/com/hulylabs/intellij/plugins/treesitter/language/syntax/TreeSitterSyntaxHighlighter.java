@@ -2,16 +2,14 @@ package com.hulylabs.intellij.plugins.treesitter.language.syntax;
 
 import com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterHighlightingColors;
 import com.hulylabs.treesitter.language.Language;
-import com.intellij.lexer.Lexer;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
-import com.intellij.openapi.fileTypes.SyntaxHighlighterBase;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class TreeSitterSyntaxHighlighter extends SyntaxHighlighterBase {
+public class TreeSitterSyntaxHighlighter {
     private final Language language;
     private final Map<Short, TextAttributesKey[]> attributes;
     private final TreeSitterCaptureElementType[] symbolElementMap;
@@ -33,15 +31,13 @@ public class TreeSitterSyntaxHighlighter extends SyntaxHighlighterBase {
         }
     }
 
-    @Override
-    public @NotNull Lexer getHighlightingLexer() {
+    public @NotNull TreeSitterLexer getHighlightingLexer() {
         if (lexer == null) {
             lexer = new TreeSitterLexer(language, symbolElementMap);
         }
         return lexer;
     }
 
-    @Override
     public TextAttributesKey @NotNull [] getTokenHighlights(IElementType tokenType) {
         if (tokenType instanceof TreeSitterCaptureElementType) {
             TreeSitterCaptureElementType treeSitterElementType = (TreeSitterCaptureElementType) tokenType;

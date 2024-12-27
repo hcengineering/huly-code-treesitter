@@ -59,10 +59,6 @@ public class Language {
         return this.visibleSymbolLookup[id];
     }
 
-    public Set<String> getCaptureNames() {
-        return new HashSet<>(this.highlights.values());
-    }
-
     public Map<Integer, String> getHighlights() {
         return highlights;
     }

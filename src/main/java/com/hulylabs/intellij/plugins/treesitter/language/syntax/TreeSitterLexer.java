@@ -1,23 +1,19 @@
 package com.hulylabs.intellij.plugins.treesitter.language.syntax;
 
 import com.hulylabs.treesitter.language.Language;
-import com.intellij.lexer.LexerBase;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.treesitter.*;
 
-public class TreeSitterLexer extends LexerBase {
+public class TreeSitterLexer {
     private final TSParser parser;
     private final TreeSitterCaptureElementType[] symbolElementMap;
     private final Language language;
 
-    private CharSequence buffer;
-    private int startOffset;
     private int parsedEndOffset;
     private int endOffset;
-    private int state;
     private int currentOffset;
     private TSTree tree;
 
@@ -36,11 +32,8 @@ public class TreeSitterLexer extends LexerBase {
         this.symbolElementMap = symbolElementMap;
     }
 
-    @Override
-    public void start(@NotNull CharSequence buffer, int startOffset, int endOffset, int initialState) {
-        this.state = initialState;
+    public void start(@NotNull CharSequence buffer, int startOffset, int endOffset) {
         if (startOffset == endOffset) {
-            this.startOffset = startOffset;
             this.endOffset = endOffset;
             this.currentOffset = startOffset;
             currentToken = null;
@@ -57,13 +50,11 @@ public class TreeSitterLexer extends LexerBase {
         if (tree != null) {
             tree.edit(new TSInputEdit(startOffset * 2, parsedEndOffset * 2, endOffset * 2, new TSPoint(0, 0), new TSPoint(0, 0), new TSPoint(0, 0)));
         }
-        startImpl(buffer, startOffset, endOffset, initialState);
+        startImpl(buffer, startOffset, endOffset);
     }
 
-    public void start(@NotNull CharSequence buffer, int startOffset, int endOffset, int eventOffset, int eventOldLength, int eventNewLength, int initialState) {
-        this.state = initialState;
+    public void start(@NotNull CharSequence buffer, int startOffset, int endOffset, int eventOffset, int eventOldLength, int eventNewLength) {
         if (startOffset == endOffset) {
-            this.startOffset = startOffset;
             this.endOffset = endOffset;
             this.currentOffset = startOffset;
             currentToken = null;
@@ -74,12 +65,10 @@ public class TreeSitterLexer extends LexerBase {
         if (tree != null) {
             tree.edit(new TSInputEdit(eventOffset * 2, (eventOffset + eventOldLength) * 2, (eventOffset + eventNewLength) * 2, new TSPoint(0, 0), new TSPoint(0, 0), new TSPoint(0, 0)));
         }
-        startImpl(buffer, startOffset, endOffset, initialState);
+        startImpl(buffer, startOffset, endOffset);
     }
 
-    private void startImpl(@NotNull CharSequence buffer, int startOffset, int endOffset, int initialState) {
-        this.buffer = buffer;
-        this.startOffset = startOffset;
+    private void startImpl(@NotNull CharSequence buffer, int startOffset, int endOffset) {
         this.endOffset = endOffset;
         this.currentOffset = startOffset;
         String str = buffer.toString();
@@ -98,27 +87,23 @@ public class TreeSitterLexer extends LexerBase {
         advance();
     }
 
-    @Override
     public int getState() {
         return 0;
     }
 
-    @Override
     public @Nullable IElementType getTokenType() {
         return currentToken;
     }
 
-    @Override
     public int getTokenStart() {
         return currentTokenStart;
     }
 
-    @Override
     public int getTokenEnd() {
         return currentTokenEnd;
     }
 
-    private IElementType getElementType(int symbol, boolean isNodeStart, boolean isNodeEnd) {
+    private IElementType getElementType(int symbol) {
         if (symbol == Language.ERROR_SYMBOL) {
             return TokenType.BAD_CHARACTER;
         }
@@ -131,7 +116,7 @@ public class TreeSitterLexer extends LexerBase {
 
     private void emitLeafNodeToken(TSNode node) {
         this.node = node;
-        currentToken = getElementType(node.getSymbol(), false, false);
+        currentToken = getElementType(node.getSymbol());
         currentTokenStart = currentOffset;
         currentTokenEnd = Math.min(node.getEndByte() / 2, endOffset);
         nodeStarted = true;
@@ -149,7 +134,7 @@ public class TreeSitterLexer extends LexerBase {
 
     private void emitNodeStartToken(TSNode node) {
         this.node = node;
-        currentToken = getElementType(node.getSymbol(), true, false);
+        currentToken = getElementType(node.getSymbol());
         currentTokenStart = currentOffset;
         currentTokenEnd = currentOffset;
         nodeStarted = true;
@@ -158,7 +143,7 @@ public class TreeSitterLexer extends LexerBase {
 
     private void emitNodeEndToken(TSNode node) {
         this.node = node;
-        currentToken = getElementType(node.getSymbol(), false, true);
+        currentToken = getElementType(node.getSymbol());
         currentTokenStart = currentOffset;
         currentTokenEnd = Math.min(node.getEndByte() / 2, endOffset);
         nodeStarted = true;
@@ -214,7 +199,6 @@ public class TreeSitterLexer extends LexerBase {
         return symbolElementMap[id] == null;
     }
 
-    @Override
     public void advance() {
         boolean repeatAdvance;
         do {
@@ -260,15 +244,5 @@ public class TreeSitterLexer extends LexerBase {
                 }
             }
         } while (repeatAdvance);
-    }
-
-    @Override
-    public @NotNull CharSequence getBufferSequence() {
-        return buffer;
-    }
-
-    @Override
-    public int getBufferEnd() {
-        return endOffset;
     }
 }

@@ -32,7 +32,6 @@ import java.util.Map;
 
 public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, PrioritizedDocumentListener {
     private EditorColorsScheme myScheme;
-    private final Language myLanguage;
     @NotNull
     private final TreeSitterSyntaxHighlighter myHighlighter;
     private HighlighterClient myEditor;
@@ -43,9 +42,8 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
     private final Map<IElementType, TextAttributesKey[]> myKeysMap = new HashMap<>();
 
     public TreeSitterLexerEditorHighlighter(Language language, EditorColorsScheme scheme) {
-        myLanguage = language;
         myHighlighter = new TreeSitterSyntaxHighlighter(language);
-        myLexer = (TreeSitterLexer) myHighlighter.getHighlightingLexer();
+        myLexer = myHighlighter.getHighlightingLexer();
         mySegments = createSegments();
         myScheme = scheme;
     }
@@ -88,10 +86,6 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
     public void setColorScheme(@NotNull EditorColorsScheme scheme) {
         myScheme = scheme;
         myAttributesMap.clear();
-    }
-
-    private HighlighterClient getClient() {
-        return myEditor;
     }
 
     private @Nullable Document getDocument() {
@@ -151,7 +145,7 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
         int startOffset = mySegments.getSegmentStart(startIndex);
         int textLength = text.length();
 
-        myLexer.start(text, startOffset, textLength, eventOffset, eventOffset + eventOldLength, eventOffset + eventNewLength, data);
+        myLexer.start(text, startOffset, textLength, eventOffset, eventOffset + eventOldLength, eventOffset + eventNewLength);
         for (IElementType tokenType = myLexer.getTokenType(); tokenType != null; tokenType = myLexer.getTokenType()) {
             if (startIndex >= oldStartIndex) break;
             if (myLexer.getTokenStart() == myLexer.getTokenEnd()) {
@@ -247,7 +241,7 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
         int textLength = text.length();
 
         SegmentArrayWithData tempSegments = createSegments();
-        myLexer.start(text, 0, text.length(), 0);
+        myLexer.start(text, 0, text.length());
         int i = 0;
         while (true) {
             IElementType tokenType = myLexer.getTokenType();
@@ -327,10 +321,6 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
             mySegmentIndex = mySegments.findSegmentIndex(startOffset);
         }
 
-        public int currentIndex() {
-            return mySegmentIndex;
-        }
-
         @Override
         public TextAttributes getTextAttributes() {
             return getAttributes(getTokenType());
@@ -370,10 +360,5 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
         public Document getDocument() {
             return TreeSitterLexerEditorHighlighter.this.getDocument();
         }
-
-        public HighlighterClient getClient() {
-            return TreeSitterLexerEditorHighlighter.this.getClient();
-        }
-
     }
 }
