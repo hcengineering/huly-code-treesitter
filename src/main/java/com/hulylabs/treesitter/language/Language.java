@@ -7,7 +7,7 @@ import org.treesitter.TSSymbolType;
 import java.util.*;
 
 public class Language {
-    private static final int ERROR_SYMBOL = 65535;
+    public static final int ERROR_SYMBOL = 65535;
     private final TSLanguage language;
     private final String languageName;
     private final ArrayList<Integer> visibleSymbols;

@@ -8,56 +8,46 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterBase;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class TreeSitterSyntaxHighlighter extends SyntaxHighlighterBase {
     private final Language language;
-    private final TextAttributesKey[][] attributes;
-    private final short[] symbolHighlightMap;
+    private final Map<Short, TextAttributesKey[]> attributes;
+    private final TreeSitterCaptureElementType[] symbolElementMap;
     private TreeSitterLexer lexer;
 
     public TreeSitterSyntaxHighlighter(Language language) {
         super();
         this.language = language;
 
-        Set<String> captureNames = language.getCaptureNames();
-        this.attributes = new TextAttributesKey[captureNames.size()][];
         TreeSitterHighlightingColors colors = TreeSitterHighlightingColors.getInstance();
-        HashMap<String, Short> highlightsIndexes = new HashMap<>();
-        short idx = 0;
-        for (String captureName : captureNames) {
-            highlightsIndexes.put(captureName, idx);
-            attributes[idx++] = new TextAttributesKey[]{colors.getTextAttributesKey(captureName)};
-        }
-        this.symbolHighlightMap = new short[language.getVisibleSymbolCount()];
-        Arrays.fill(symbolHighlightMap, (short) -1);
+        this.attributes = new HashMap<>();
+        this.symbolElementMap = new TreeSitterCaptureElementType[language.getVisibleSymbolCount()];
         for (Map.Entry<Integer, String> entry : language.getHighlights().entrySet()) {
-            symbolHighlightMap[entry.getKey()] = highlightsIndexes.get(entry.getValue());
+            var elementType = TreeSitterCaptureElementType.findOrCreate(entry.getValue());
+            symbolElementMap[entry.getKey()] = elementType;
+            if (!attributes.containsKey(elementType.getGroupId())) {
+                attributes.put(elementType.getGroupId(), new TextAttributesKey[]{colors.getTextAttributesKey(entry.getValue())});
+            }
         }
     }
 
     @Override
     public @NotNull Lexer getHighlightingLexer() {
         if (lexer == null) {
-            lexer = new TreeSitterLexer(language, symbolHighlightMap);
+            lexer = new TreeSitterLexer(language, symbolElementMap);
         }
         return lexer;
     }
 
     @Override
     public TextAttributesKey @NotNull [] getTokenHighlights(IElementType tokenType) {
-        if (tokenType instanceof TreeSitterElementType) {
-            TreeSitterElementType treeSitterElementType = (TreeSitterElementType) tokenType;
-            if (treeSitterElementType.isNodeStart()) {
-                return new TextAttributesKey[0];
-            }
-            int tokenSymbol = treeSitterElementType.getTreeSitterSymbol();
-            short symbolHighlight = symbolHighlightMap[tokenSymbol];
-            if (symbolHighlight != -1) {
-                return this.attributes[symbolHighlight];
+        if (tokenType instanceof TreeSitterCaptureElementType) {
+            TreeSitterCaptureElementType treeSitterElementType = (TreeSitterCaptureElementType) tokenType;
+            TextAttributesKey[] symbolAttributes = this.attributes.get(treeSitterElementType.getGroupId());
+            if (symbolAttributes != null) {
+                return symbolAttributes;
             }
         }
         return new TextAttributesKey[0];

@@ -8,14 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.treesitter.*;
 
-import java.util.HashMap;
-import java.util.Objects;
-
 public class TreeSitterLexer extends LexerBase {
     private final TSParser parser;
-    private final short[] symbolHighlightMap;
+    private final TreeSitterCaptureElementType[] symbolElementMap;
     private final Language language;
-    HashMap<ElementTypeKey, TreeSitterElementType> elementTypes;
 
     private CharSequence buffer;
     private int startOffset;
@@ -34,11 +30,10 @@ public class TreeSitterLexer extends LexerBase {
     private int currentTokenStart;
     private int currentTokenEnd;
 
-    public TreeSitterLexer(Language language, short[] symbolHighlightMap) {
+    public TreeSitterLexer(Language language, TreeSitterCaptureElementType[] symbolElementMap) {
         this.language = language;
         this.parser = language.createParser();
-        this.elementTypes = new HashMap<>();
-        this.symbolHighlightMap = symbolHighlightMap;
+        this.symbolElementMap = symbolElementMap;
     }
 
     @Override
@@ -123,43 +118,15 @@ public class TreeSitterLexer extends LexerBase {
         return currentTokenEnd;
     }
 
-    private static class ElementTypeKey {
-        final int symbol;
-        final boolean isNodeStart;
-        final boolean isNodeEnd;
-
-        public ElementTypeKey(int symbol, boolean isNodeStart, boolean isNodeEnd) {
-            this.symbol = symbol;
-            this.isNodeStart = isNodeStart;
-            this.isNodeEnd = isNodeEnd;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (o == null || getClass() != o.getClass()) return false;
-            ElementTypeKey that = (ElementTypeKey) o;
-            return symbol == that.symbol && isNodeStart == that.isNodeStart && isNodeEnd == that.isNodeEnd;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(symbol, isNodeStart, isNodeEnd);
-        }
-    }
-
     private IElementType getElementType(int symbol, boolean isNodeStart, boolean isNodeEnd) {
-        if (symbol == 65535) {
+        if (symbol == Language.ERROR_SYMBOL) {
             return TokenType.BAD_CHARACTER;
         }
         int id = language.getVisibleSymbolId(symbol);
-        ElementTypeKey key = new ElementTypeKey(id, isNodeStart, isNodeEnd);
-        if (elementTypes.containsKey(key)) {
-            return elementTypes.get(key);
-        } else {
-            TreeSitterElementType elementType = new TreeSitterElementType(id, isNodeStart, isNodeEnd);
-            elementTypes.put(key, elementType);
-            return elementType;
+        if (symbolElementMap[id] != null) {
+            return symbolElementMap[id];
         }
+        return TreeSitterCaptureElementType.NONE;
     }
 
     private void emitLeafNodeToken(TSNode node) {
@@ -201,7 +168,7 @@ public class TreeSitterLexer extends LexerBase {
     private void emitNextNode(TSNode node) {
         if (node.getStartByte() / 2 > currentOffset) {
             emitWhitespaceTokenBeforeNodeStart(node);
-        } else if (node.getChildCount() > 0 && !isHighlighted(node)) {
+        } else if (node.getChildCount() > 0 && shouldDescend(node)) {
             emitNodeStartToken(node);
         } else {
             emitLeafNodeToken(node);
@@ -238,14 +205,13 @@ public class TreeSitterLexer extends LexerBase {
         emitNextNode(node);
     }
 
-    boolean isHighlighted(TSNode node) {
+    boolean shouldDescend(TSNode node) {
         int symbol = node.getSymbol();
-        if (symbol == 65535) {
-            return false;
+        if (symbol == Language.ERROR_SYMBOL) {
+            return true;
         }
         int id = language.getVisibleSymbolId(symbol);
-        short symbolHighlight = symbolHighlightMap[id];
-        return symbolHighlight != -1;
+        return symbolElementMap[id] == null;
     }
 
     @Override
@@ -287,7 +253,7 @@ public class TreeSitterLexer extends LexerBase {
                 }
                 emitNextNode(cursor.currentNode());
             } else {
-                if (node.getChildCount() > 0 && !isHighlighted(node)) {
+                if (node.getChildCount() > 0 && shouldDescend(node)) {
                     emitNodeStartToken(node);
                 } else {
                     emitLeafNodeToken(node);
