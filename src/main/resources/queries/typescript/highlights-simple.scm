@@ -1,6 +1,7 @@
 (identifier) @variable
 (property_identifier) @variable.member
 (shorthand_property_identifier) @variable.member
+(shorthand_property_identifier_pattern) @variable.member
 (private_property_identifier) @variable.member
 (statement_identifier) @label
 (this) @variable.builtin
@@ -132,3 +133,5 @@
 (type_identifier) @type
 (predefined_type) @type.builtin
 (template_literal_type) @string
+"default" @keyword
+"~" @operator

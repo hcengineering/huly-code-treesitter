@@ -1,6 +1,7 @@
 (identifier) @variable
 (property_identifier) @variable.member
 (shorthand_property_identifier) @variable.member
+(shorthand_property_identifier_pattern) @variable.member
 (private_property_identifier) @variable.member
 (statement_identifier) @label
 (decorator) @attribute

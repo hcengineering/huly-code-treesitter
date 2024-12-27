@@ -109,3 +109,5 @@
 (inner_doc_comment_marker) @comment
 (unit_type) @type.builtin
 (unit_expression) @constant.builtin
+"as" @keyword
+"#" @punctuation.special
