@@ -129,38 +129,36 @@ public class TreeSitterLexer extends LexerBase {
         final int symbol;
         final boolean isNodeStart;
         final boolean isNodeEnd;
-        final int depth;
 
-        public ElementTypeKey(int symbol, boolean isNodeStart, boolean isNodeEnd, int depth) {
+        public ElementTypeKey(int symbol, boolean isNodeStart, boolean isNodeEnd) {
             this.symbol = symbol;
             this.isNodeStart = isNodeStart;
             this.isNodeEnd = isNodeEnd;
-            this.depth = depth;
         }
 
         @Override
         public boolean equals(Object o) {
             if (o == null || getClass() != o.getClass()) return false;
             ElementTypeKey that = (ElementTypeKey) o;
-            return symbol == that.symbol && isNodeStart == that.isNodeStart && isNodeEnd == that.isNodeEnd && depth == that.depth;
+            return symbol == that.symbol && isNodeStart == that.isNodeStart && isNodeEnd == that.isNodeEnd;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(symbol, isNodeStart, isNodeEnd, depth);
+            return Objects.hash(symbol, isNodeStart, isNodeEnd);
         }
     }
 
-    private IElementType getElementType(int symbol, boolean isNodeStart, boolean isNodeEnd, int depth) {
+    private IElementType getElementType(int symbol, boolean isNodeStart, boolean isNodeEnd) {
         if (symbol == 65535) {
             return TokenType.BAD_CHARACTER;
         }
         int id = language.getVisibleSymbolId(symbol);
-        ElementTypeKey key = new ElementTypeKey(id, isNodeStart, isNodeEnd, depth);
+        ElementTypeKey key = new ElementTypeKey(id, isNodeStart, isNodeEnd);
         if (elementTypes.containsKey(key)) {
             return elementTypes.get(key);
         } else {
-            TreeSitterElementType elementType = new TreeSitterElementType(id, isNodeStart, isNodeEnd, depth);
+            TreeSitterElementType elementType = new TreeSitterElementType(id, isNodeStart, isNodeEnd);
             elementTypes.put(key, elementType);
             return elementType;
         }
@@ -168,7 +166,7 @@ public class TreeSitterLexer extends LexerBase {
 
     private void emitLeafNodeToken(TSNode node) {
         this.node = node;
-        currentToken = getElementType(node.getSymbol(), false, false, 0);
+        currentToken = getElementType(node.getSymbol(), false, false);
         currentTokenStart = currentOffset;
         currentTokenEnd = Math.min(node.getEndByte() / 2, endOffset);
         nodeStarted = true;
@@ -186,16 +184,7 @@ public class TreeSitterLexer extends LexerBase {
 
     private void emitNodeStartToken(TSNode node) {
         this.node = node;
-        if (currentToken != null && currentToken instanceof TreeSitterElementType) {
-            TreeSitterElementType treeSitterElementType = (TreeSitterElementType) currentToken;
-            if (treeSitterElementType.equals(language.getVisibleSymbolId(node.getSymbol()), true, false)) {
-                currentToken = getElementType(node.getSymbol(), true, false, treeSitterElementType.getDepth() + 1);
-            } else {
-                currentToken = getElementType(node.getSymbol(), true, false, 0);
-            }
-        } else {
-            currentToken = getElementType(node.getSymbol(), true, false, 0);
-        }
+        currentToken = getElementType(node.getSymbol(), true, false);
         currentTokenStart = currentOffset;
         currentTokenEnd = currentOffset;
         nodeStarted = true;
@@ -204,16 +193,7 @@ public class TreeSitterLexer extends LexerBase {
 
     private void emitNodeEndToken(TSNode node) {
         this.node = node;
-        if (currentToken != null && currentToken instanceof TreeSitterElementType) {
-            TreeSitterElementType treeSitterElementType = (TreeSitterElementType) currentToken;
-            if (treeSitterElementType.equals(language.getVisibleSymbolId(node.getSymbol()), false, true)) {
-                currentToken = getElementType(node.getSymbol(), false, true, treeSitterElementType.getDepth() + 1);
-            } else {
-                currentToken = getElementType(node.getSymbol(), false, true, 0);
-            }
-        } else {
-            currentToken = getElementType(node.getSymbol(), false, true, 0);
-        }
+        currentToken = getElementType(node.getSymbol(), false, true);
         currentTokenStart = currentOffset;
         currentTokenEnd = Math.min(node.getEndByte() / 2, endOffset);
         nodeStarted = true;

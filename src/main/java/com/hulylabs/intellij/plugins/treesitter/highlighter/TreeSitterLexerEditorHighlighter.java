@@ -7,7 +7,6 @@ import com.hulylabs.intellij.plugins.treesitter.language.syntax.TreeSitterLexer;
 import com.hulylabs.intellij.plugins.treesitter.language.syntax.TreeSitterSyntaxHighlighter;
 import com.hulylabs.treesitter.language.Language;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
@@ -249,25 +248,24 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
         int textLength = text.length();
 
         SegmentArrayWithData tempSegments = createSegments();
-        ValidatingLexerWrapper lexerWrapper = new ValidatingLexerWrapper(myLexer);
-        lexerWrapper.start(text, 0, text.length(), 0);
+        myLexer.start(text, 0, text.length(), 0);
         int i = 0;
         while (true) {
-            IElementType tokenType = lexerWrapper.getTokenType();
+            IElementType tokenType = myLexer.getTokenType();
             if (tokenType == null) break;
-            if (lexerWrapper.getTokenStart() == lexerWrapper.getTokenEnd()) {
-                lexerWrapper.advance();
+            if (myLexer.getTokenStart() == myLexer.getTokenEnd()) {
+                myLexer.advance();
                 continue;
             }
 
-            int state = lexerWrapper.getState();
+            int state = myLexer.getState();
             int data = tempSegments.packData(tokenType, state, state == 0);
-            tempSegments.setElementAt(i, lexerWrapper.getTokenStart(), lexerWrapper.getTokenEnd(), data);
+            tempSegments.setElementAt(i, myLexer.getTokenStart(), myLexer.getTokenEnd(), data);
             i++;
             if (i % 1024 == 0) {
                 ProgressManager.checkCanceled();
             }
-            lexerWrapper.advance();
+            myLexer.advance();
         }
         myText = text;
         mySegments = tempSegments;
