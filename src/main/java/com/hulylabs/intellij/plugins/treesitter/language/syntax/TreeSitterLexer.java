@@ -2,7 +2,6 @@ package com.hulylabs.intellij.plugins.treesitter.language.syntax;
 
 import com.hulylabs.treesitter.language.Language;
 import com.intellij.lexer.LexerBase;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
@@ -11,11 +10,10 @@ import org.treesitter.*;
 
 import java.util.HashMap;
 import java.util.Objects;
-import java.util.Set;
 
 public class TreeSitterLexer extends LexerBase {
     private final TSParser parser;
-    private final Set<Integer> knownSymbols;
+    private final short[] symbolHighlightMap;
     private final Language language;
     HashMap<ElementTypeKey, TreeSitterElementType> elementTypes;
 
@@ -36,11 +34,11 @@ public class TreeSitterLexer extends LexerBase {
     private int currentTokenStart;
     private int currentTokenEnd;
 
-    public TreeSitterLexer(Language language, Set<Integer> knownSymbols) {
+    public TreeSitterLexer(Language language, short[] symbolHighlightMap) {
         this.language = language;
         this.parser = language.createParser();
-        this.knownSymbols = knownSymbols;
         this.elementTypes = new HashMap<>();
+        this.symbolHighlightMap = symbolHighlightMap;
     }
 
     @Override
@@ -203,7 +201,7 @@ public class TreeSitterLexer extends LexerBase {
     private void emitNextNode(TSNode node) {
         if (node.getStartByte() / 2 > currentOffset) {
             emitWhitespaceTokenBeforeNodeStart(node);
-        } else if (node.getChildCount() > 0 && !knownSymbols.contains(language.getVisibleSymbolId(node.getSymbol()))) {
+        } else if (node.getChildCount() > 0 && !isHighlighted(node)) {
             emitNodeStartToken(node);
         } else {
             emitLeafNodeToken(node);
@@ -238,6 +236,16 @@ public class TreeSitterLexer extends LexerBase {
             node = cursor.currentNode();
         }
         emitNextNode(node);
+    }
+
+    boolean isHighlighted(TSNode node) {
+        int symbol = node.getSymbol();
+        if (symbol == 65535) {
+            return false;
+        }
+        int id = language.getVisibleSymbolId(symbol);
+        short symbolHighlight = symbolHighlightMap[id];
+        return symbolHighlight != -1;
     }
 
     @Override
@@ -279,7 +287,7 @@ public class TreeSitterLexer extends LexerBase {
                 }
                 emitNextNode(cursor.currentNode());
             } else {
-                if (node.getChildCount() > 0 && !knownSymbols.contains(language.getVisibleSymbolId(node.getSymbol()))) {
+                if (node.getChildCount() > 0 && !isHighlighted(node)) {
                     emitNodeStartToken(node);
                 } else {
                     emitLeafNodeToken(node);

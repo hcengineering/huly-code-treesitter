@@ -45,10 +45,9 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
     public TreeSitterLexerEditorHighlighter(Language language, EditorColorsScheme scheme) {
         myLanguage = language;
         myHighlighter = new TreeSitterSyntaxHighlighter(language);
-        var knownSymbols = myHighlighter.getKnownSymbols();
+        myLexer = (TreeSitterLexer) myHighlighter.getHighlightingLexer();
         mySegments = createSegments();
         myScheme = scheme;
-        myLexer = new TreeSitterLexer(language, knownSymbols);
     }
 
     public SegmentArrayWithData createSegments() {

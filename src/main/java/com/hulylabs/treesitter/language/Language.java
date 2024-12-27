@@ -4,9 +4,7 @@ import org.treesitter.TSLanguage;
 import org.treesitter.TSParser;
 import org.treesitter.TSSymbolType;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Language {
     private static final int ERROR_SYMBOL = 65535;
@@ -59,6 +57,10 @@ public class Language {
             return id;
         }
         return this.visibleSymbolLookup[id];
+    }
+
+    public Set<String> getCaptureNames() {
+        return new HashSet<>(this.highlights.values());
     }
 
     public Map<Integer, String> getHighlights() {
