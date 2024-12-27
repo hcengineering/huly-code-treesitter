@@ -49,7 +49,7 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
     }
 
     public SegmentArrayWithData createSegments() {
-        return new SegmentArrayWithData(new ShortBasedStorage());
+        return new SegmentArrayWithData(new TreeSitterCaptureStorage());
     }
 
     @Override
