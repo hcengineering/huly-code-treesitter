@@ -22,5 +22,7 @@
         <fileType name="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.language.TreeSitterFileType" fieldName="INSTANCE" language="TreeSitter"/>
         <fileTypeDetector implementation="com.hulylabs.intellij.plugins.treesitter.language.TreeSitterFileType$TreeSitterFileTypeDetector" order="last"/>
         <editorHighlighterProvider filetype="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.highlighter.TreeSitterEditorHighlighterProvider"/>
+        <editorHighlighterProvider filetype="Rust" implementationClass="com.hulylabs.intellij.plugins.treesitter.highlighter.TreeSitterEditorHighlighterProvider"/>
+        <editorHighlighterProvider filetype="TypeScript" implementationClass="com.hulylabs.intellij.plugins.treesitter.highlighter.TreeSitterEditorHighlighterProvider"/>
     </extensions>
 </idea-plugin>
