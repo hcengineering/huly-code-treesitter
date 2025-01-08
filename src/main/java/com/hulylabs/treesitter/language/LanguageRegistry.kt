@@ -13,6 +13,7 @@ import org.treesitter.TreeSitterZig
 import org.treesitter.TreeSitterSvelte
 import org.treesitter.TreeSitterJavascript
 import org.treesitter.TreeSitterAstro
+import org.treesitter.TreeSitterCss
 
 @Service
 class LanguageRegistry(
@@ -57,6 +58,7 @@ class LanguageRegistry(
                     "svelte" -> Language(TreeSitterSvelte(), languageName, languageHighlights)
                     "javascript" -> Language(TreeSitterJavascript(), languageName, languageHighlights)
                     "astro" -> Language(TreeSitterAstro(), languageName, languageHighlights)
+                    "css" -> Language(TreeSitterCss(), languageName, languageHighlights)
                     else -> {
                         LOG.warn("Unknown language: $languageName")
                         null

@@ -79,5 +79,14 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module-library">
+      <library name="tree-sitter-css">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/vendor/tree-sitter-css-0.23.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>

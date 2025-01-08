@@ -16,5 +16,8 @@
   },
   "astro": {
     "extensions": ["astro"]
+  },
+  "css": {
+    "extensions": ["css"]
   }
 }
