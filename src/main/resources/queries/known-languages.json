@@ -1,23 +1,30 @@
 {
   "rust": {
-    "extensions": ["rs"]
+    "extensions": ["rs"],
+    "className": "org.treesitter.TreeSitterRust"
   },
   "zig": {
-    "extensions": ["zig"]
+    "extensions": ["zig"],
+    "className": "org.treesitter.TreeSitterZig"
   },
   "typescript": {
-    "extensions": ["ts"]
+    "extensions": ["ts"],
+    "className": "org.treesitter.TreeSitterTypescript"
   },
   "javascript": {
-    "extensions": ["js", "jsx"]
+    "extensions": ["js", "jsx"],
+    "className": "org.treesitter.TreeSitterJavascript"
   },
   "svelte": {
-    "extensions": ["svelte"]
+    "extensions": ["svelte"],
+    "className": "org.treesitter.TreeSitterSvelte"
   },
   "astro": {
-    "extensions": ["astro"]
+    "extensions": ["astro"],
+    "className": "org.treesitter.TreeSitterAstro"
   },
   "css": {
-    "extensions": ["css"]
+    "extensions": ["css"],
+    "className": "org.treesitter.TreeSitterCss"
   }
 }

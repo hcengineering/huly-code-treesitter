@@ -7,13 +7,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import org.treesitter.TreeSitterRust
-import org.treesitter.TreeSitterTypescript
-import org.treesitter.TreeSitterZig
-import org.treesitter.TreeSitterSvelte
-import org.treesitter.TreeSitterJavascript
-import org.treesitter.TreeSitterAstro
-import org.treesitter.TreeSitterCss
+import org.treesitter.TSLanguage
 
 @Service
 class LanguageRegistry(
@@ -30,13 +24,19 @@ class LanguageRegistry(
             }
             val json = Json { ignoreUnknownKeys = true }
             val knownLanguagesJson = json.parseToJsonElement(text).jsonObject
-            val languageNames = knownLanguagesJson.keys
             knownLanguagesJson.forEach({ languageName, languageJson ->
                 languageJson.jsonObject["extensions"]?.jsonArray?.forEach { extension ->
                     extensions[extension.jsonPrimitive.content] = languageName
                 }
             })
-            for (languageName in languageNames) {
+            val pluginClassLoader = LanguageRegistry::class.java.classLoader
+            for (languageEntry in knownLanguagesJson) {
+                val languageName = languageEntry.key
+                val className = languageEntry.value.jsonObject["className"]?.jsonPrimitive?.content
+                if (className == null) {
+                    LOG.warn("No className found for $languageName")
+                    continue
+                }
                 val highlightsText = withContext(Dispatchers.IO) {
                     Language::class.java.getResource("/queries/$languageName/highlights-simple.scm")?.readText()
                 }
@@ -51,21 +51,16 @@ class LanguageRegistry(
                     val captureName = split[1].substring(1)
                     languageHighlights[LanguageSymbol(nodeName, isNamed)] = captureName
                 }
-                val language = when (languageName) {
-                    "rust" -> Language(TreeSitterRust(), languageName, languageHighlights)
-                    "typescript" -> Language(TreeSitterTypescript(), languageName, languageHighlights)
-                    "zig" -> Language(TreeSitterZig(), languageName, languageHighlights)
-                    "svelte" -> Language(TreeSitterSvelte(), languageName, languageHighlights)
-                    "javascript" -> Language(TreeSitterJavascript(), languageName, languageHighlights)
-                    "astro" -> Language(TreeSitterAstro(), languageName, languageHighlights)
-                    "css" -> Language(TreeSitterCss(), languageName, languageHighlights)
-                    else -> {
-                        LOG.warn("Unknown language: $languageName")
-                        null
-                    }
+                try {
+                    val clazz = pluginClassLoader.loadClass(className)
+                    val constructor = clazz.getConstructor()
+                    val tsLanguage = constructor.newInstance() as TSLanguage
+                    val language = Language(tsLanguage, languageName, languageHighlights)
+                    languages[languageName] = language
+                } catch (e: Exception) {
+                    LOG.warn("Class not found for $languageName: $e")
+                    continue
                 }
-                if (language == null) continue
-                languages[languageName] = language
             }
         }
     }
