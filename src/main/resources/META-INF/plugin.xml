@@ -19,7 +19,7 @@
         <additionalTextAttributes scheme="High contrast" file="colorSchemes/TreeSitterHighContrast.xml"/>
         <additionalTextAttributes scheme="Darcula" file="colorSchemes/TreeSitterDarcula.xml"/>
         <additionalTextAttributes scheme="Darcula Contrast" file="colorSchemes/TreeSitterDarculaContrast.xml"/>
-        <additionalTextAttributes scheme="IntelliJ Light" file="colorSchemes/TreeSitterIntelliJLight.xml"/>
+        <additionalTextAttributes scheme="IntelliJ Light" file="colorSchemes/TreeSitterIntellijLight.xml"/>
         <fileType name="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.language.TreeSitterFileType" fieldName="INSTANCE" language="TreeSitter"/>
         <fileTypeDetector implementation="com.hulylabs.intellij.plugins.treesitter.language.TreeSitterFileType$TreeSitterFileTypeDetector" order="last"/>
         <editorHighlighterProvider filetype="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.highlighter.TreeSitterEditorHighlighterProvider"/>
