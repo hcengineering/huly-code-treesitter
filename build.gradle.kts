@@ -21,14 +21,9 @@ intellij {
 }
 
 dependencies {
-    implementation(files("vendor/tree-sitter-0.24.5.jar"))
-    implementation(files("vendor/tree-sitter-astro-master.jar"))
-    implementation(files("vendor/tree-sitter-css-0.23.1.jar"))
-    implementation(files("vendor/tree-sitter-javascript-0.23.1.jar"))
-    implementation(files("vendor/tree-sitter-rust-0.23.2.jar"))
-    implementation(files("vendor/tree-sitter-svelte-1.0.2.jar"))
-    implementation(files("vendor/tree-sitter-typescript-0.23.2.jar"))
-    implementation(files("vendor/tree-sitter-zig-1.1.2.jar"))
+    val vendorDir = fileTree("vendor")
+    vendorDir.include("*.jar")
+    implementation(vendorDir)
 }
 
 tasks {

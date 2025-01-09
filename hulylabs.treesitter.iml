@@ -17,75 +17,13 @@
     <orderEntry type="library" name="kotlinx-serialization-json" level="project" />
     <orderEntry type="library" name="kotlinx-serialization-core" level="project" />
     <orderEntry type="module-library">
-      <library name="tree-sitter-rust">
+      <library name="tree-sitter-libs">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/vendor/tree-sitter-rust-0.23.2.jar!/" />
+          <root url="file://$MODULE_DIR$/vendor" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="tree-sitter-svelte">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/vendor/tree-sitter-svelte-1.0.2.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="tree-sitter-typescript">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/vendor/tree-sitter-typescript-0.23.2.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="tree-sitter-zig">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/vendor/tree-sitter-zig-1.1.2.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="tree-sitter-astro">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/vendor/tree-sitter-astro-master.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="tree-sitter">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/vendor/tree-sitter-0.24.5.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="tree-sitter-javascript">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/vendor/tree-sitter-javascript-0.23.1.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="tree-sitter-css">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/vendor/tree-sitter-css-0.23.1.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
+        <jarDirectory url="file://$MODULE_DIR$/vendor" recursive="false" />
       </library>
     </orderEntry>
   </component>
