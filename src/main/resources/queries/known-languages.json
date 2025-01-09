@@ -26,5 +26,9 @@
   "css": {
     "extensions": ["css"],
     "className": "org.treesitter.TreeSitterCss"
+  },
+  "html": {
+    "extensions": ["html", "htm"],
+    "className": "org.treesitter.TreeSitterHtml"
   }
 }
