@@ -1,6 +1,7 @@
 (tag_name) @tag
 (comment) @comment
 (attribute_name) @tag.attribute
+(quoted_attribute_value) @string
 (text) @none
 "<" @tag.delimiter
 ">" @tag.delimiter
