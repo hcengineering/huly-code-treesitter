@@ -1,6 +1,6 @@
 <idea-plugin>
   <extensions defaultExtensionNs="com.intellij">
-    <editorHighlighterProvider filetype="textmate" implementationClass="com.hulylabs.intellij.plugins.treesitter.highlighter.TreeSitterEditorHighlighterProvider" order="before org.jetbrains.plugins.textmate"/>
+    <editorHighlighterProvider filetype="textmate" implementationClass="com.hulylabs.intellij.plugins.treesitter.highlighter.TreeSitterEditorHighlighterProvider" order="first"/>
     <multiLangCommenter implementation="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterCommenterProvider"/>
   </extensions>
 </idea-plugin>

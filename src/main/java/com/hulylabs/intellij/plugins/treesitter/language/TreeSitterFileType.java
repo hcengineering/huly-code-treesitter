@@ -59,7 +59,7 @@ public class TreeSitterFileType extends LanguageFileType implements FileTypeIden
 
     private static boolean isUndefinedFileType(@NotNull FileType fileType) {
         return fileType == UnknownFileType.INSTANCE || fileType == INSTANCE || fileType instanceof PlainTextLikeFileType ||
-                fileType == DetectedByContentFileType.INSTANCE;
+                fileType == DetectedByContentFileType.INSTANCE || fileType.getClass().getName().equals("org.jetbrains.plugins.textmate.TextMateFileType");
     }
 
     static final class TreeSitterFileTypeDetector implements FileTypeRegistry.FileTypeDetector {
