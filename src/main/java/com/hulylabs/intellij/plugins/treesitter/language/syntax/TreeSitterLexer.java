@@ -1,5 +1,6 @@
 package com.hulylabs.intellij.plugins.treesitter.language.syntax;
 
+import com.hulylabs.treesitter.TreeSitterParsersPool;
 import com.hulylabs.treesitter.language.Language;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
@@ -8,7 +9,6 @@ import org.jetbrains.annotations.Nullable;
 import org.treesitter.*;
 
 public class TreeSitterLexer {
-    private final TSParser parser;
     private final TreeSitterCaptureElementType[] symbolElementMap;
     private final Language language;
 
@@ -28,7 +28,6 @@ public class TreeSitterLexer {
 
     public TreeSitterLexer(Language language, TreeSitterCaptureElementType[] symbolElementMap) {
         this.language = language;
-        this.parser = language.createParser();
         this.symbolElementMap = symbolElementMap;
     }
 
@@ -72,8 +71,10 @@ public class TreeSitterLexer {
         this.endOffset = endOffset;
         this.currentOffset = startOffset;
         String str = buffer.toString();
-        parser.reset();
-        tree = parser.parseStringEncoding(tree, str, TSInputEncoding.TSInputEncodingUTF16);
+        tree = TreeSitterParsersPool.INSTANCE.withParser((TSParser parser) -> {
+            language.applyToParser(parser);
+            return parser.parseStringEncoding(tree, str, TSInputEncoding.TSInputEncodingUTF16);
+        });
         parsedEndOffset = endOffset;
         node = tree.getRootNode();
         cursor = new TSTreeCursor(node);

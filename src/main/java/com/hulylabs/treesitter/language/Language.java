@@ -38,10 +38,8 @@ public class Language {
         return this.languageName;
     }
 
-    public TSParser createParser() {
-        TSParser parser = new TSParser();
-        parser.setLanguage(language);
-        return parser;
+    public void applyToParser(TSParser parser) {
+        parser.setLanguage(this.language);
     }
 
     public int getVisibleSymbolCount() {
