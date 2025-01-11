@@ -20,9 +20,10 @@
         <additionalTextAttributes scheme="Darcula" file="colorSchemes/TreeSitterDarcula.xml"/>
         <additionalTextAttributes scheme="Darcula Contrast" file="colorSchemes/TreeSitterDarculaContrast.xml"/>
         <additionalTextAttributes scheme="IntelliJ Light" file="colorSchemes/TreeSitterIntellijLight.xml"/>
-        <fileType name="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.language.TreeSitterFileType" fieldName="INSTANCE" language="TreeSitter"/>
+        <fileType name="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.language.TreeSitterFileType" fieldName="INSTANCE" language="TreeSitter" order="first"/>
         <fileTypeDetector implementation="com.hulylabs.intellij.plugins.treesitter.language.TreeSitterFileType$TreeSitterFileTypeDetector" order="last"/>
         <editorHighlighterProvider filetype="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.highlighter.TreeSitterEditorHighlighterProvider"/>
         <lang.commenter language="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterCommenter"/>
+        <lang.parserDefinition language="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.language.TreeSitterParserDefinition"/>
     </extensions>
 </idea-plugin>

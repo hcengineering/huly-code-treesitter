@@ -33,7 +33,6 @@ public class TreeSitterEditorHighlighterProvider implements EditorHighlighterPro
 
 
         if (extension != null) {
-            LanguageRegistry registry = ApplicationManager.getApplication().getService(LanguageRegistry.class);
             Language language = ApplicationManager.getApplication().getService(LanguageRegistry.class).getLanguage(extension);
             if (language != null) {
                 var highlighter = new TreeSitterLexerEditorHighlighter(language, colors);

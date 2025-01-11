@@ -74,7 +74,7 @@ public class TreeSitterFileType extends LanguageFileType implements FileTypeIden
             String fileName = file.getName();
             FileType originalFileType = FileTypeManager.getInstance().getFileTypeByFileName(fileName);
             String extension = file.getExtension();
-            if (isUndefinedFileType(originalFileType) &&extension != null) {
+            if (isUndefinedFileType(originalFileType) && extension != null) {
                 LanguageRegistry registry = ApplicationManager.getApplication().getService(LanguageRegistry.class);
                 return registry.getLanguage(extension) != null ? INSTANCE : null;
             }
