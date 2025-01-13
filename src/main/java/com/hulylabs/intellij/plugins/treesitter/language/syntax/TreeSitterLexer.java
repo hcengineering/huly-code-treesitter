@@ -1,7 +1,10 @@
 package com.hulylabs.intellij.plugins.treesitter.language.syntax;
 
+import com.hulylabs.intellij.plugins.treesitter.TreeSitterStorageUtil;
 import com.hulylabs.treesitter.TreeSitterParsersPool;
 import com.hulylabs.treesitter.language.Language;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.util.UserDataHolder;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
@@ -12,7 +15,6 @@ public class TreeSitterLexer {
     private final TreeSitterCaptureElementType[] symbolElementMap;
     private final Language language;
 
-    private int parsedEndOffset;
     private int endOffset;
     private int currentOffset;
     private TSTree tree;
@@ -31,7 +33,7 @@ public class TreeSitterLexer {
         this.symbolElementMap = symbolElementMap;
     }
 
-    public void start(@NotNull CharSequence buffer, int startOffset, int endOffset) {
+    public void start(@NotNull CharSequence buffer, @NotNull UserDataHolder dataHolder, int startOffset, int endOffset) {
         if (startOffset == endOffset) {
             this.endOffset = endOffset;
             this.currentOffset = startOffset;
@@ -40,44 +42,45 @@ public class TreeSitterLexer {
             currentTokenEnd = startOffset;
             return;
         }
+        startImpl(buffer, dataHolder, null, startOffset, endOffset);
+    }
 
-        if (startOffset == 0) {
+    public void start(@NotNull Document document, @Nullable TSInputEdit edit, long oldTimeStamp, int startOffset, int endOffset) {
+        if (startOffset == endOffset) {
+            this.endOffset = endOffset;
+            this.currentOffset = startOffset;
+            currentToken = null;
+            currentTokenStart = startOffset;
+            currentTokenEnd = startOffset;
+            return;
+        }
+        TSTree oldTree = TreeSitterStorageUtil.INSTANCE.getTreeForTimestamp(document, oldTimeStamp);
+        TSTree editedTree = null;
+        if (oldTree != null) {
+            editedTree = oldTree.copy();
+            editedTree.edit(edit);
+        }
+        startImpl(document.getText(), document, editedTree, startOffset, endOffset);
+    }
+
+    private void startImpl(CharSequence buffer, @NotNull UserDataHolder dataHolder, TSTree oldTree, int startOffset, int endOffset) {
+        String str = buffer.toString();
+        this.endOffset = endOffset;
+        this.currentOffset = startOffset;
+        TSTree newTree = TreeSitterParsersPool.INSTANCE.withParser((TSParser parser) -> {
+            language.applyToParser(parser);
+            return parser.parseStringEncoding(oldTree, str, TSInputEncoding.TSInputEncodingUTF16);
+        });
+        if (newTree != null) {
+            TreeSitterStorageUtil.INSTANCE.setCurrentTree(dataHolder, newTree);
+            tree = newTree;
+            node = tree.getRootNode();
+            cursor = new TSTreeCursor(node);
+        } else {
             tree = null;
             node = null;
             cursor = null;
         }
-        if (tree != null) {
-            tree.edit(new TSInputEdit(startOffset * 2, parsedEndOffset * 2, endOffset * 2, new TSPoint(0, 0), new TSPoint(0, 0), new TSPoint(0, 0)));
-        }
-        startImpl(buffer, startOffset, endOffset);
-    }
-
-    public void start(@NotNull CharSequence buffer, int startOffset, int endOffset, int eventOffset, int eventOldLength, int eventNewLength) {
-        if (startOffset == endOffset) {
-            this.endOffset = endOffset;
-            this.currentOffset = startOffset;
-            currentToken = null;
-            currentTokenStart = startOffset;
-            currentTokenEnd = startOffset;
-            return;
-        }
-        if (tree != null) {
-            tree.edit(new TSInputEdit(eventOffset * 2, (eventOffset + eventOldLength) * 2, (eventOffset + eventNewLength) * 2, new TSPoint(0, 0), new TSPoint(0, 0), new TSPoint(0, 0)));
-        }
-        startImpl(buffer, startOffset, endOffset);
-    }
-
-    private void startImpl(@NotNull CharSequence buffer, int startOffset, int endOffset) {
-        this.endOffset = endOffset;
-        this.currentOffset = startOffset;
-        String str = buffer.toString();
-        tree = TreeSitterParsersPool.INSTANCE.withParser((TSParser parser) -> {
-            language.applyToParser(parser);
-            return parser.parseStringEncoding(tree, str, TSInputEncoding.TSInputEncodingUTF16);
-        });
-        parsedEndOffset = endOffset;
-        node = tree.getRootNode();
-        cursor = new TSTreeCursor(node);
 
         currentToken = null;
         currentTokenStart = startOffset;
@@ -162,6 +165,12 @@ public class TreeSitterLexer {
     }
 
     private void setupInitialState() {
+        if (tree == null) {
+            currentToken = TreeSitterCaptureElementType.NONE;
+            currentTokenStart = currentOffset;
+            currentTokenEnd = endOffset;
+            return;
+        }
         int startByteOffset = currentOffset * 2;
         // Tokens for nodes that started before startOffset should be already emitted
         while (node.getStartByte() < startByteOffset) {

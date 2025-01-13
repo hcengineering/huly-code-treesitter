@@ -3,6 +3,7 @@
 // Copyright 2000-2023 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.hulylabs.intellij.plugins.treesitter.highlighter;
 
+import com.hulylabs.intellij.plugins.treesitter.TreeSitterStorageUtil;
 import com.hulylabs.intellij.plugins.treesitter.language.syntax.TreeSitterLexer;
 import com.hulylabs.intellij.plugins.treesitter.language.syntax.TreeSitterSyntaxHighlighter;
 import com.hulylabs.treesitter.language.Language;
@@ -21,14 +22,19 @@ import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.util.Comparing;
+import com.intellij.openapi.util.UserDataHolder;
+import com.intellij.openapi.util.UserDataHolderBase;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.text.ImmutableCharSequence;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.treesitter.TSInputEdit;
+import org.treesitter.TSPoint;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.IntConsumer;
 
 public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, PrioritizedDocumentListener {
     private EditorColorsScheme myScheme;
@@ -40,6 +46,10 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
     private final TreeSitterLexer myLexer;
     private final Map<IElementType, TextAttributes> myAttributesMap = new HashMap<>();
     private final Map<IElementType, TextAttributesKey[]> myKeysMap = new HashMap<>();
+    // Temporary data holder to store the tree before the editor is attached
+    private DataHolder dataHolder = new DataHolder();
+
+    private static class DataHolder extends UserDataHolderBase { }
 
     public TreeSitterLexerEditorHighlighter(Language language, EditorColorsScheme scheme) {
         myHighlighter = new TreeSitterSyntaxHighlighter(language);
@@ -80,6 +90,10 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
     @Override
     public void setEditor(@NotNull HighlighterClient editor) {
         this.myEditor = editor;
+        Document document = getDocument();
+        if (document != null && Comparing.equal(myText, document.getImmutableCharSequence())) {
+            TreeSitterStorageUtil.INSTANCE.moveTreeToDocument(dataHolder, document);
+        }
     }
 
     @Override
@@ -101,7 +115,8 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
                 mySegments.removeAll();
                 return;
             }
-            incrementalUpdate(event.getOffset(), event.getOldLength(), event.getNewLength(), document);
+            TSInputEdit edit = toTSInputEdit(event);
+            incrementalUpdate(document, edit, event.getOldTimeStamp());
         } catch (ProcessCanceledException e) {
             myText = null;
             mySegments.removeAll();
@@ -109,20 +124,60 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
         }
     }
 
-    private static boolean segmentsEqual(@NotNull SegmentArrayWithData a1,
-                                         int idx1,
-                                         @NotNull SegmentArrayWithData a2,
-                                         int idx2,
-                                         int offsetShift) {
-        return a1.getSegmentStart(idx1) + offsetShift == a2.getSegmentStart(idx2) &&
-                a1.getSegmentEnd(idx1) + offsetShift == a2.getSegmentEnd(idx2) &&
-                a1.getSegmentData(idx1) == a2.getSegmentData(idx2);
+    private static boolean segmentsEqual(@NotNull SegmentArrayWithData a1, int idx1, @NotNull SegmentArrayWithData a2, int idx2, int offsetShift) {
+        return a1.getSegmentStart(idx1) + offsetShift == a2.getSegmentStart(idx2) && a1.getSegmentEnd(idx1) + offsetShift == a2.getSegmentEnd(idx2) && a1.getSegmentData(idx1) == a2.getSegmentData(idx2);
     }
 
+    private static class TreeSitterPositionCounter implements IntConsumer {
+        private int line;
+        private int column;
 
-    private void incrementalUpdate(int eventOffset, int eventOldLength, int eventNewLength, @NotNull Document document) {
+        public TreeSitterPositionCounter(int line, int column) {
+            this.line = line;
+            this.column = column;
+        }
+
+        @Override
+        public void accept(int value) {
+            // TreeSitter column is a byte offset
+            if (value == '\n') {
+                line++;
+                column = 0;
+            } else {
+                column += 2;
+            }
+        }
+
+        private TSPoint getPoint() {
+            return new TSPoint(line, column);
+        }
+    }
+
+    private static TSInputEdit toTSInputEdit(@NotNull DocumentEvent event) {
+        Document document = event.getDocument();
         CharSequence text = document.getImmutableCharSequence();
 
+        int startLine = document.getLineNumber(event.getOffset());
+        int startLineOffset = document.getLineStartOffset(startLine);
+        var startPointCounter = new TreeSitterPositionCounter(startLine, 0);
+        text.subSequence(startLineOffset, event.getOffset()).chars().forEachOrdered(startPointCounter);
+        var oldEndPointCounter = new TreeSitterPositionCounter(startPointCounter.line, startPointCounter.column);
+        var newEndPointCounter = new TreeSitterPositionCounter(startPointCounter.line, startPointCounter.column);
+        event.getOldFragment().chars().forEachOrdered(oldEndPointCounter);
+        event.getNewFragment().chars().forEachOrdered(newEndPointCounter);
+        return new TSInputEdit(
+                event.getOffset() * 2,
+                (event.getOffset() + event.getOldLength()) * 2,
+                (event.getOffset() + event.getNewLength()) * 2,
+                startPointCounter.getPoint(),
+                oldEndPointCounter.getPoint(),
+                newEndPointCounter.getPoint()
+        );
+    }
+
+    private void incrementalUpdate(@NotNull Document document, TSInputEdit edit, long oldTimestamp) {
+        CharSequence text = document.getImmutableCharSequence();
+        int eventOffset = edit.getStartByte() / 2;
         if (mySegments.getSegmentCount() == 0 || mySegments.getLastValidOffset() < eventOffset) {
             setText(text);
             return;
@@ -139,13 +194,12 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
             data = mySegments.getSegmentData(startIndex);
             if (data >= 0 || startIndex == 0) break;
             startIndex--;
-        }
-        while (true);
+        } while (true);
 
         int startOffset = mySegments.getSegmentStart(startIndex);
         int textLength = text.length();
 
-        myLexer.start(text, startOffset, textLength, eventOffset, eventOffset + eventOldLength, eventOffset + eventNewLength);
+        myLexer.start(document, edit, oldTimestamp, startOffset, textLength);
         for (IElementType tokenType = myLexer.getTokenType(); tokenType != null; tokenType = myLexer.getTokenType()) {
             if (startIndex >= oldStartIndex) break;
             if (myLexer.getTokenStart() == myLexer.getTokenEnd()) {
@@ -158,9 +212,7 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
             int tokenEnd = myLexer.getTokenEnd();
 
             data = mySegments.packData(tokenType, lexerState, lexerState == 0);
-            if (mySegments.getSegmentStart(startIndex) != tokenStart ||
-                    mySegments.getSegmentEnd(startIndex) != tokenEnd ||
-                    mySegments.getSegmentData(startIndex) != data) {
+            if (mySegments.getSegmentStart(startIndex) != tokenStart || mySegments.getSegmentEnd(startIndex) != tokenEnd || mySegments.getSegmentData(startIndex) != data) {
                 break;
             }
             startIndex++;
@@ -172,8 +224,8 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
         int repaintEnd = -1;
         int insertSegmentCount = 0;
         int oldEndIndex = -1;
-        int shift = eventNewLength - eventOldLength;
-        int newEndOffset = eventOffset + eventNewLength;
+        int shift = (edit.getNewEndByte() - edit.getOldEndByte()) / 2;
+        int newEndOffset = edit.getNewEndByte() / 2;
         int lastSegmentOffset = mySegments.getLastValidOffset();
         for (IElementType tokenType = myLexer.getTokenType(); tokenType != null; tokenType = myLexer.getTokenType()) {
             int lexerState = myLexer.getState();
@@ -221,8 +273,7 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
         mySegments.shiftSegments(oldEndIndex, shift);
         mySegments.replace(startIndex, oldEndIndex, insertSegments);
 
-        if (insertSegmentCount != 0 &&
-                (oldEndIndex != startIndex + 1 || insertSegmentCount != 1 || data != mySegments.getSegmentData(startIndex))) {
+        if (insertSegmentCount != 0 && (oldEndIndex != startIndex + 1 || insertSegmentCount != 1 || data != mySegments.getSegmentData(startIndex))) {
             myEditor.repaint(startOffset, repaintEnd);
         }
 
@@ -241,7 +292,9 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
         int textLength = text.length();
 
         SegmentArrayWithData tempSegments = createSegments();
-        myLexer.start(text, 0, text.length());
+        Document document = getDocument();
+        UserDataHolder activeDataHolder = document != null ? document : dataHolder;
+        myLexer.start(text, activeDataHolder, 0, textLength);
         int i = 0;
         while (true) {
             IElementType tokenType = myLexer.getTokenType();
@@ -278,8 +331,7 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
         return EditorDocumentPriorities.LEXER_EDITOR;
     }
 
-    @NotNull
-    TextAttributes convertAttributes(TextAttributesKey @NotNull [] keys) {
+    @NotNull TextAttributes convertAttributes(TextAttributesKey @NotNull [] keys) {
         TextAttributes result = new TextAttributes();
 
         for (TextAttributesKey key : keys) {
