@@ -86,7 +86,7 @@ class TreeSitterLineIndentProvider : LineIndentProvider {
                     startPoint = startPoint ?: capture.node.startPoint
                     endPoint = endPoint ?: capture.node.endPoint
                 } else if (capture.index == tsLanguage.indentStartCaptureId) {
-                    startPoint = capture.node.startPoint
+                    startPoint = capture.node.endPoint
                 } else if (capture.index == tsLanguage.indentEndCaptureId) {
                     endPoint = capture.node.startPoint
                 }
@@ -103,10 +103,10 @@ class TreeSitterLineIndentProvider : LineIndentProvider {
             }
         }
         val indentPoint = TSPoint(
-            line, DocumentUtil.getIndentLength(document, line)
+            line, DocumentUtil.getIndentLength(document, document.getLineStartOffset(line))
         )
         val previousLine = previousContentLine ?: 0
-        val previousLineIndentPoint = TSPoint(previousLine, DocumentUtil.getIndentLength(document, line))
+        val previousLineIndentPoint = TSPoint(previousLine, DocumentUtil.getIndentLength(document, document.getLineStartOffset(previousLine)))
 
         var addIndent = false
         var outdentToLine: Int? = null
