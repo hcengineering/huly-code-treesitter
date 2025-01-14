@@ -26,8 +26,8 @@
 "then" @keyword.coroutine
 "catch" @keyword.exception
 "debug" @keyword.debug
-"{" @punctuation.bracket.braces
-"}" @punctuation.bracket.braces
+"{" @punctuation.bracket.braces.left
+"}" @punctuation.bracket.braces.right
 "#" @tag.delimiter
 ":" @tag.delimiter
 "/" @tag.delimiter

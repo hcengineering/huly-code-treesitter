@@ -26,5 +26,6 @@
         <lang.commenter language="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterCommenter"/>
         <lang.parserDefinition language="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.language.TreeSitterParserDefinition"/>
         <lineIndentProvider implementation="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterLineIndentProvider"/>
+        <lang.braceMatcher language="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterPairedBraceMatcher"/>
     </extensions>
 </idea-plugin>

@@ -46,9 +46,9 @@
 ":" @punctuation.delimiter
 "::" @punctuation.delimiter
 ";" @punctuation.delimiter
-"{" @punctuation.bracket.braces
-")" @punctuation.bracket.parentheses
-"(" @punctuation.bracket.parentheses
-"}" @punctuation.bracket.braces
-"[" @punctuation.bracket
-"]" @punctuation.bracket
+"{" @punctuation.bracket.braces.left
+")" @punctuation.bracket.parentheses.left
+"(" @punctuation.bracket.parentheses.right
+"}" @punctuation.bracket.braces.right
+"[" @punctuation.bracket.left
+"]" @punctuation.bracket.right
