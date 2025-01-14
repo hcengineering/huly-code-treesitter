@@ -25,5 +25,6 @@
         <editorHighlighterProvider filetype="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.highlighter.TreeSitterEditorHighlighterProvider"/>
         <lang.commenter language="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterCommenter"/>
         <lang.parserDefinition language="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.language.TreeSitterParserDefinition"/>
+        <lineIndentProvider implementation="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterLineIndentProvider"/>
     </extensions>
 </idea-plugin>

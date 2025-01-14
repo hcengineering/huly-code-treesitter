@@ -1,5 +1,6 @@
 package com.hulylabs.treesitter.language
 
+import com.hulylabs.treesitter.query.Query
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import kotlinx.coroutines.*
@@ -56,6 +57,15 @@ class LanguageRegistry(
                     val constructor = clazz.getConstructor()
                     val tsLanguage = constructor.newInstance() as TSLanguage
                     val language = Language(tsLanguage, languageName, languageHighlights)
+                    launch {
+                        val queryData = withContext(Dispatchers.IO) {
+                            Language::class.java.getResource("/queries/$languageName/indents.scm")?.readBytes()
+                        }
+                        if (queryData != null) {
+                            val query = Query(tsLanguage, queryData, mapOf())
+                            language.setIndentQuery(query)
+                        }
+                    }
                     languages[languageName] = language
                 } catch (e: Exception) {
                     LOG.warn("Class not found for $languageName: $e")

@@ -1,5 +1,6 @@
 package com.hulylabs.treesitter.language;
 
+import com.hulylabs.treesitter.query.Query;
 import org.treesitter.TSLanguage;
 import org.treesitter.TSParser;
 import org.treesitter.TSSymbolType;
@@ -13,6 +14,10 @@ public class Language {
     private final ArrayList<Integer> visibleSymbols;
     private final int[] visibleSymbolLookup;
     private final HashMap<Integer, String> highlights;
+    private Query indentQuery;
+    private int indentCaptureId = -1;
+    private int indentStartCaptureId = -1;
+    private int indentEndCaptureId = -1;
 
     public Language(TSLanguage language, String languageName, HashMap<LanguageSymbol, String> highlights) {
         this.language = language;
@@ -32,6 +37,41 @@ public class Language {
             LanguageSymbol symbol = entry.getKey();
             this.highlights.put(symbolForName(symbol.getName(), symbol.isNamed()), entry.getValue());
         }
+    }
+
+    void setIndentQuery(Query query) {
+        this.indentQuery = query;
+        int captureId = 0;
+        for (String captureName : query.getCaptureNames()) {
+            switch (captureName) {
+                case "indent":
+                    this.indentCaptureId = captureId;
+                    break;
+                case "start":
+                    this.indentStartCaptureId = captureId;
+                    break;
+                case "end":
+                    this.indentEndCaptureId = captureId;
+                    break;
+            }
+            captureId++;
+        }
+    }
+
+    public Query getIndentQuery() {
+        return this.indentQuery;
+    }
+
+    public int getIndentCaptureId() {
+        return this.indentCaptureId;
+    }
+
+    public int getIndentStartCaptureId() {
+        return this.indentStartCaptureId;
+    }
+
+    public int getIndentEndCaptureId() {
+        return this.indentEndCaptureId;
     }
 
     public String getName() {
