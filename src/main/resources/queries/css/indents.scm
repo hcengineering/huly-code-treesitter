@@ -1,1 +1,1 @@
-(_ "{" "}" @end) @indent
+(_ "{" @start "}" @end) @indent

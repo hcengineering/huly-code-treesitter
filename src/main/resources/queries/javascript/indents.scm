@@ -9,10 +9,10 @@
     (for_statement)
 ] @indent
 
-(_ "[" "]" @end) @indent
-(_ "<" ">" @end) @indent
-(_ "{" "}" @end) @indent
-(_ "(" ")" @end) @indent
+(_ "[" @start "]" @end) @indent
+(_ "<" @start ">" @end) @indent
+(_ "{" @start "}" @end) @indent
+(_ "(" @start ")" @end) @indent
 
 (jsx_opening_element ">" @end) @indent
 
