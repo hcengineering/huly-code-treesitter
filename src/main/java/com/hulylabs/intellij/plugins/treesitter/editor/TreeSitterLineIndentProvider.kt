@@ -123,7 +123,7 @@ class TreeSitterLineIndentProvider : LineIndentProvider {
         var indentSpaces = 0
 
         val indentOptions = CodeStyle.getIndentOptions(project, document)
-        if (addIndent) {
+        if (addIndent && (outdentToLine == null || outdentToLine != previousLine)) {
             baseLine = previousLine
             indentSpaces = indentOptions.INDENT_SIZE
         } else if (outdentToLine != null && outdentToLine < previousLine) {
