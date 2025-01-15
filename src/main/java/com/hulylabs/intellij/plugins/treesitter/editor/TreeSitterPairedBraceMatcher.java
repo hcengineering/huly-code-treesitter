@@ -13,9 +13,9 @@ public class TreeSitterPairedBraceMatcher implements PairedBraceMatcher {
 
     TreeSitterPairedBraceMatcher() {
         bracePairs = new BracePair[]{
-                new BracePair(TreeSitterCaptureElementType.findOrCreate("punctuation.bracket.left"), TreeSitterCaptureElementType.findOrCreate("punctuation.bracket.right"), true),
+                new BracePair(TreeSitterCaptureElementType.findOrCreate("punctuation.bracket.left"), TreeSitterCaptureElementType.findOrCreate("punctuation.bracket.right"), false),
                 new BracePair(TreeSitterCaptureElementType.findOrCreate("punctuation.bracket.braces.left"), TreeSitterCaptureElementType.findOrCreate("punctuation.bracket.braces.right"), true),
-                new BracePair(TreeSitterCaptureElementType.findOrCreate("punctuation.bracket.parentheses.left"), TreeSitterCaptureElementType.findOrCreate("punctuation.bracket.parentheses.right"), true),
+                new BracePair(TreeSitterCaptureElementType.findOrCreate("punctuation.bracket.parentheses.left"), TreeSitterCaptureElementType.findOrCreate("punctuation.bracket.parentheses.right"), false),
         };
     }
 
