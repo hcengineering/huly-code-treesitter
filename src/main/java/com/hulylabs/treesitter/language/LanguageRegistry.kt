@@ -18,6 +18,16 @@ class LanguageRegistry(
     private val extensions = HashMap<String, String>()
     private val languages = HashMap<String, Language>()
 
+    private fun parseSimpleQuery(queryText: String): Map<LanguageSymbol, String> {
+        return queryText.lineSequence().map { line ->
+            val split = line.trim().split(" ")
+            val nodeName = split[0].substring(1, split[0].length - 1)
+            val isNamed = split[0].startsWith('(') && split[0].endsWith(')')
+            val captureName = split[1].substring(1)
+            Pair(LanguageSymbol(nodeName, isNamed), captureName)
+        }.toMap()
+    }
+
     init {
         coroutineScope.launch {
             val text = withContext(Dispatchers.IO) {
@@ -45,13 +55,7 @@ class LanguageRegistry(
                     LOG.warn("No highlights-simple.scm found for $languageName")
                     continue
                 }
-                val languageHighlights = HashMap<LanguageSymbol, String>()
-                highlightsText.lineSequence().map { line -> line.trim().split(" ") }.forEach { split ->
-                    val nodeName = split[0].substring(1, split[0].length - 1)
-                    val isNamed = split[0].startsWith('(') && split[0].endsWith(')')
-                    val captureName = split[1].substring(1)
-                    languageHighlights[LanguageSymbol(nodeName, isNamed)] = captureName
-                }
+                val languageHighlights = parseSimpleQuery(highlightsText)
                 try {
                     val clazz = pluginClassLoader.loadClass(className)
                     val constructor = clazz.getConstructor()

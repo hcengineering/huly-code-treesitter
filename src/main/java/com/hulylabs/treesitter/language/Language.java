@@ -13,13 +13,13 @@ public class Language {
     private final String languageName;
     private final ArrayList<Integer> visibleSymbols;
     private final int[] visibleSymbolLookup;
-    private final HashMap<Integer, String> highlights;
+    private final Map<Integer, String> highlights;
     private Query indentQuery;
     private int indentCaptureId = -1;
     private int indentStartCaptureId = -1;
     private int indentEndCaptureId = -1;
 
-    public Language(TSLanguage language, String languageName, HashMap<LanguageSymbol, String> highlights) {
+    public Language(TSLanguage language, String languageName, Map<LanguageSymbol, String> highlights) {
         this.language = language;
         this.languageName = languageName;
         int symbolCount = language.symbolCount();
