@@ -33,11 +33,9 @@
 "type" @keyword.type
 "async" @keyword.coroutine
 "await" @keyword.coroutine
-"gen" @keyword.coroutine
 "try" @keyword.exception
 "ref" @keyword.modifier
 "pub" @keyword.modifier
-"raw" @keyword.modifier
 (mutable_specifier) @keyword.modifier
 "const" @keyword.modifier
 "static" @keyword.modifier
