@@ -1,6 +1,7 @@
 package com.hulylabs.treesitter.language;
 
 import com.hulylabs.treesitter.query.Query;
+import org.jetbrains.annotations.Nullable;
 import org.treesitter.TSLanguage;
 import org.treesitter.TSParser;
 import org.treesitter.TSSymbolType;
@@ -18,6 +19,8 @@ public class Language {
     private int indentCaptureId = -1;
     private int indentStartCaptureId = -1;
     private int indentEndCaptureId = -1;
+    private Query foldQuery;
+    private int foldCaptureId = -1;
 
     public Language(TSLanguage language, String languageName, Map<LanguageSymbol, String> highlights) {
         this.language = language;
@@ -72,6 +75,26 @@ public class Language {
 
     public int getIndentEndCaptureId() {
         return this.indentEndCaptureId;
+    }
+
+    void setFoldQuery(Query foldQuery) {
+        this.foldQuery = foldQuery;
+        int captureId = 0;
+        for (String captureName : foldQuery.getCaptureNames()) {
+            if (captureName.equals("fold")) {
+                this.foldCaptureId = captureId;
+                break;
+            }
+            captureId++;
+        }
+    }
+
+    public @Nullable Query getFoldQuery() {
+        return this.foldQuery;
+    }
+
+    public int getFoldCaptureId() {
+        return this.foldCaptureId;
     }
 
     public String getName() {

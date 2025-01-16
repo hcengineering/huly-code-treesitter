@@ -3,7 +3,10 @@ package com.hulylabs.treesitter.language
 import com.hulylabs.treesitter.query.Query
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -68,6 +71,15 @@ class LanguageRegistry(
                         if (queryData != null) {
                             val query = Query(tsLanguage, queryData, mapOf())
                             language.setIndentQuery(query)
+                        }
+                    }
+                    launch {
+                        val queryData = withContext(Dispatchers.IO) {
+                            Language::class.java.getResource("/queries/$languageName/folds.scm")?.readBytes()
+                        }
+                        if (queryData != null) {
+                            val query = Query(tsLanguage, queryData, mapOf())
+                            language.setFoldQuery(query)
                         }
                     }
                     languages[languageName] = language

@@ -28,5 +28,6 @@
         <lineIndentProvider implementation="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterLineIndentProvider"/>
         <lang.braceMatcher language="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterPairedBraceMatcher"/>
         <enterHandlerDelegate implementation="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterEnterHandler"/>
+        <lang.foldingBuilder language="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterFoldingBuilder"/>
     </extensions>
 </idea-plugin>
