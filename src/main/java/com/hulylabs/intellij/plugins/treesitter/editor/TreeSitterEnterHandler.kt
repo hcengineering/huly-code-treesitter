@@ -58,9 +58,10 @@ class TreeSitterEnterHandler : EnterHandlerDelegate {
         if (language == null) {
             return EnterHandlerDelegate.Result.Continue
         }
+        val query = language.indentQuery ?: return EnterHandlerDelegate.Result.Continue
         val queryStartOffset = DocumentUtil.getLineStartOffset(caretOffset.get(), document)
         val queryEndOffset = DocumentUtil.getLineEndOffset(caretOffset.get(), document)
-        val matchesIterator = language.indentQuery.getMatches(tree, tree.rootNode, queryStartOffset, queryEndOffset)
+        val matchesIterator = query.getMatches(tree, tree.rootNode, queryStartOffset, queryEndOffset)
         val offset = caretOffset.get()
         val leftOffset = CharArrayUtil.shiftBackward(text, offset, " \t")
         val rightOffset = CharArrayUtil.shiftForward(text, offset, " \t")

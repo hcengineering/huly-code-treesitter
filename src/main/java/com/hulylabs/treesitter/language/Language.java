@@ -61,7 +61,7 @@ public class Language {
         }
     }
 
-    public Query getIndentQuery() {
+    public @Nullable Query getIndentQuery() {
         return this.indentQuery;
     }
 
