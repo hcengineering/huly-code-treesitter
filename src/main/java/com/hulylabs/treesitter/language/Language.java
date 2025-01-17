@@ -21,6 +21,8 @@ public class Language {
     private int indentEndCaptureId = -1;
     private Query foldQuery;
     private int foldCaptureId = -1;
+    private int foldStartCaptureId = -1;
+    private int foldEndCaptureId = -1;
 
     public Language(TSLanguage language, String languageName, Map<LanguageSymbol, String> highlights) {
         this.language = language;
@@ -81,9 +83,16 @@ public class Language {
         this.foldQuery = foldQuery;
         int captureId = 0;
         for (String captureName : foldQuery.getCaptureNames()) {
-            if (captureName.equals("fold")) {
-                this.foldCaptureId = captureId;
-                break;
+            switch (captureName) {
+                case "fold":
+                    this.foldCaptureId = captureId;
+                    break;
+                case "start":
+                    this.foldStartCaptureId = captureId;
+                    break;
+                case "end":
+                    this.foldEndCaptureId = captureId;
+                    break;
             }
             captureId++;
         }
@@ -95,6 +104,14 @@ public class Language {
 
     public int getFoldCaptureId() {
         return this.foldCaptureId;
+    }
+
+    public int getFoldStartCaptureId() {
+        return this.foldStartCaptureId;
+    }
+
+    public int getFoldEndCaptureId() {
+        return this.foldEndCaptureId;
     }
 
     public String getName() {

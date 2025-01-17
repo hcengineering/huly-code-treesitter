@@ -1,4 +1,2 @@
-[
-  (block)
-  (initializer_list)
-] @fold
+(block "{" @start "}" @end) @fold
+(initializer_list"{" @start "}" @end) @fold

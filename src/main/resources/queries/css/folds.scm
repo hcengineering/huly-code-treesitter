@@ -1,1 +1,1 @@
-(block) @fold
+(block "{" @start "}" @end) @fold
