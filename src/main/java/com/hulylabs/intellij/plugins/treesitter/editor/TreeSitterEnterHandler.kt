@@ -1,14 +1,12 @@
 package com.hulylabs.intellij.plugins.treesitter.editor
 
-import com.hulylabs.intellij.plugins.treesitter.TreeSitterStorageUtil.getTreeForTimestamp
+import com.hulylabs.intellij.plugins.treesitter.TreeSitterStorageUtil
 import com.hulylabs.intellij.plugins.treesitter.language.TreeSitterFileType
 import com.hulylabs.intellij.plugins.treesitter.language.TreeSitterLanguage
-import com.hulylabs.treesitter.language.LanguageRegistry
 import com.intellij.codeInsight.CodeInsightSettings
 import com.intellij.codeInsight.editorActions.EnterHandler
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegate
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actionSystem.EditorActionHandler
 import com.intellij.openapi.util.Ref
@@ -44,24 +42,18 @@ class TreeSitterEnterHandler : EnterHandlerDelegate {
         }
         val document = editor.document
         val text = document.immutableCharSequence
-        val tree = getTreeForTimestamp(document, document.modificationStamp)
+        val languageTree = TreeSitterStorageUtil.getTreeForTimestamp(document, document.modificationStamp)
             ?: return EnterHandlerDelegate.Result.Continue
 
-        val extension = editor.virtualFile.extension ?: return EnterHandlerDelegate.Result.Continue
-        val language = ApplicationManager.getApplication().getService(
-            LanguageRegistry::class.java
-        ).getLanguage(extension)
+        val language = languageTree.language
         if (caretOffset.get() - 1 >= 0 && text[caretOffset.get() - 1] == '\n') {
             caretOffset.set(caretOffset.get() - 1)
         }
         val line = document.getLineNumber(caretOffset.get())
-        if (language == null) {
-            return EnterHandlerDelegate.Result.Continue
-        }
         val query = language.indentQuery ?: return EnterHandlerDelegate.Result.Continue
         val queryStartOffset = DocumentUtil.getLineStartOffset(caretOffset.get(), document)
         val queryEndOffset = DocumentUtil.getLineEndOffset(caretOffset.get(), document)
-        val matchesIterator = query.getMatches(tree, tree.rootNode, queryStartOffset, queryEndOffset)
+        val matchesIterator = query.getMatches(languageTree.tree, languageTree.tree.rootNode, queryStartOffset, queryEndOffset)
         val offset = caretOffset.get()
         val leftOffset = CharArrayUtil.shiftBackward(text, offset, " \t")
         val rightOffset = CharArrayUtil.shiftForward(text, offset, " \t")

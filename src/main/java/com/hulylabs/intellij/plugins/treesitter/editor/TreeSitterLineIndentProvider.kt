@@ -61,16 +61,10 @@ private fun getIndentInfo(
 
 class TreeSitterLineIndentProvider : LineIndentProvider {
     override fun getLineIndent(project: Project, editor: Editor, language: Language?, offset: Int): String? {
-        val tree =
+        val languageTree =
             TreeSitterStorageUtil.getTreeForTimestamp(editor.document, editor.document.modificationStamp) ?: return null
-        val tsLanguage = editor.virtualFile.extension?.let {
-            ApplicationManager.getApplication().getService(LanguageRegistry::class.java).getLanguage(it)
-        }
-        if (tsLanguage == null) {
-            return null
-        }
         val document = editor.document
-        val query = tsLanguage.indentQuery ?: return null
+        val query = languageTree.language.indentQuery ?: return null
         val line = document.getLineNumber(offset)
         val previousContentLine =
             IntProgression.fromClosedRange(line - 1, 0, -1).find { !DocumentUtil.isLineEmpty(document, it) }
@@ -78,16 +72,16 @@ class TreeSitterLineIndentProvider : LineIndentProvider {
         val indentRangesStartOffset = document.getLineStartOffset(previousContentLine ?: line)
         val indentRangesEndOffset = document.getLineEndOffset(line)
         val indentRanges: MutableList<IndentRange> = mutableListOf()
-        for (match in query.getMatches(tree, tree.rootNode, indentRangesStartOffset, indentRangesEndOffset)) {
+        for (match in query.getMatches(languageTree.tree, languageTree.tree.rootNode, indentRangesStartOffset, indentRangesEndOffset)) {
             var startPoint: TSPoint? = null
             var endPoint: TSPoint? = null
             for (capture in match.captures) {
-                if (capture.index == tsLanguage.indentCaptureId) {
+                if (capture.index == languageTree.language.indentCaptureId) {
                     startPoint = startPoint ?: capture.node.startPoint
                     endPoint = endPoint ?: capture.node.endPoint
-                } else if (capture.index == tsLanguage.indentStartCaptureId) {
+                } else if (capture.index == languageTree.language.indentStartCaptureId) {
                     startPoint = capture.node.endPoint
-                } else if (capture.index == tsLanguage.indentEndCaptureId) {
+                } else if (capture.index == languageTree.language.indentEndCaptureId) {
                     endPoint = capture.node.startPoint
                 }
             }

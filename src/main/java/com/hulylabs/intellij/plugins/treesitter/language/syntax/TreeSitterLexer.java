@@ -3,6 +3,7 @@ package com.hulylabs.intellij.plugins.treesitter.language.syntax;
 import com.hulylabs.intellij.plugins.treesitter.TreeSitterStorageUtil;
 import com.hulylabs.treesitter.TreeSitterParsersPool;
 import com.hulylabs.treesitter.language.Language;
+import com.hulylabs.treesitter.language.LanguageGeneratedTree;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.util.UserDataHolder;
 import com.intellij.psi.TokenType;
@@ -54,10 +55,10 @@ public class TreeSitterLexer {
             currentTokenEnd = startOffset;
             return;
         }
-        TSTree oldTree = TreeSitterStorageUtil.INSTANCE.getTreeForTimestamp(document, oldTimeStamp);
+        LanguageGeneratedTree oldTree = TreeSitterStorageUtil.INSTANCE.getTreeForTimestamp(document, oldTimeStamp);
         TSTree editedTree = null;
         if (oldTree != null) {
-            editedTree = oldTree.copy();
+            editedTree = oldTree.getTree().copy();
             editedTree.edit(edit);
         }
         startImpl(document.getText(), document, editedTree, startOffset, endOffset);
@@ -72,7 +73,7 @@ public class TreeSitterLexer {
             return parser.parseStringEncoding(oldTree, str, TSInputEncoding.TSInputEncodingUTF16);
         });
         if (newTree != null) {
-            TreeSitterStorageUtil.INSTANCE.setCurrentTree(dataHolder, newTree);
+            TreeSitterStorageUtil.INSTANCE.setCurrentTree(dataHolder, new LanguageGeneratedTree(newTree, language));
             tree = newTree;
             node = tree.getRootNode();
             cursor = new TSTreeCursor(node);
