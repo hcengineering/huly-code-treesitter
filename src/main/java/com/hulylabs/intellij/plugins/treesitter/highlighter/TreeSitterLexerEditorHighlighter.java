@@ -194,7 +194,7 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
             return parser.parseStringEncoding(copiedTree, text.toString(), TSInputEncoding.TSInputEncodingUTF16);
         });
         var rangeStart = eventOffset;
-        var rangeEnd = Math.max(edit.getOldEndByte() / 2, edit.getNewEndByte() / 2);
+        var rangeEnd = edit.getNewEndByte() / 2;
         if (newTree == null) {
             return;
         }
@@ -209,11 +209,6 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
                     rangeEnd = range.getEndByte() / 2;
                 }
             }
-            int segmentIndex = mySegments.findSegmentIndex(rangeStart);
-            if (rangeEnd <= mySegments.getSegmentEnd(segmentIndex)) {
-                rangeStart = mySegments.getSegmentStart(segmentIndex);
-                rangeEnd = mySegments.getSegmentEnd(segmentIndex);
-            }
             var tokens = TreeSitterNativeHighlightLexer.collectHighlights(languageTree.getLanguage().getNativeLanguageId(), newTree, text.toString(), rangeStart, rangeEnd);
             SegmentArrayWithData insertSegments = new SegmentArrayWithData(mySegments.createStorage());
             int invalidatedStart = -1;
@@ -227,26 +222,45 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
                 int data = mySegments.packData(elementType, 0, true);
                 insertSegments.setElementAt(insertSegments.getSegmentCount(), token.startOffset(), token.endOffset(), data);
             }
+            int shift = (edit.getNewEndByte() - edit.getOldEndByte()) / 2;
             if (invalidatedStart == -1) {
                 int segmentIndexStart = mySegments.findSegmentIndex(rangeStart);
                 if (rangeEnd <= mySegments.getSegmentEnd(segmentIndexStart)) {
                     int data = mySegments.getSegmentData(segmentIndexStart);
                     int segmentStart = mySegments.getSegmentStart(segmentIndexStart);
-                    int segmentEnd = mySegments.getSegmentEnd(segmentIndexStart) + (edit.getNewEndByte() / 2 - edit.getOldEndByte() / 2);
+                    int segmentEnd = mySegments.getSegmentEnd(segmentIndexStart) + shift;
                     mySegments.setElementAt(segmentIndexStart, segmentStart, segmentEnd, data);
                     if (segmentIndexStart + 1 < mySegments.getSegmentCount()) {
-                        mySegments.shiftSegments(segmentIndexStart + 1, edit.getNewEndByte() / 2 - edit.getOldEndByte() / 2);
+                        mySegments.shiftSegments(segmentIndexStart + 1, shift);
                     }
                     myEditor.repaint(segmentStart, segmentEnd);
                 }
             } else {
                 int segmentIndexStart = mySegments.findSegmentIndex(invalidatedStart);
-                int oldEndIndex = segmentIndexStart;
-                while (oldEndIndex < mySegments.getSegmentCount() && mySegments.getSegmentEnd(oldEndIndex) < invalidatedEnd) {
-                    oldEndIndex++;
+                int oldEndIndex = mySegments.findSegmentIndex(invalidatedEnd - shift);
+                if (segmentIndexStart < oldEndIndex) {
+                    mySegments.shiftSegments(oldEndIndex, shift);
+                    mySegments.replace(segmentIndexStart, oldEndIndex, insertSegments);
+                } else {
+                    if (segmentIndexStart + 1 < mySegments.getSegmentCount()) {
+                        mySegments.shiftSegments(segmentIndexStart + 1, shift);
+                    }
+                    int oldInvalidatedEnd = invalidatedEnd - shift;
+                    int segmentStart = mySegments.getSegmentStart(segmentIndexStart);
+                    int segmentEnd = mySegments.getSegmentEnd(segmentIndexStart);
+                    int segmentData = mySegments.getSegmentData(segmentIndexStart);
+                    if (segmentStart < invalidatedStart && oldInvalidatedEnd < segmentEnd) {
+                        insertSegments.setElementAt(insertSegments.getSegmentCount(), invalidatedEnd, segmentEnd + shift, segmentData);
+                        mySegments.setElementAt(segmentIndexStart, segmentStart, invalidatedStart, segmentData);
+                        mySegments.insert(insertSegments, segmentIndexStart + 1);
+                    } else if (segmentStart == invalidatedStart) {
+                        mySegments.setElementAt(segmentIndexStart, invalidatedEnd, segmentEnd + shift, segmentData);
+                        mySegments.insert(insertSegments, segmentIndexStart);
+                    } else if (segmentEnd == oldInvalidatedEnd) {
+                        mySegments.setElementAt(segmentIndexStart, segmentStart, invalidatedStart, segmentData);
+                        mySegments.insert(insertSegments, segmentIndexStart + 1);
+                    }
                 }
-                mySegments.shiftSegments(oldEndIndex, edit.getNewEndByte() / 2 - edit.getOldEndByte() / 2);
-                mySegments.replace(segmentIndexStart, oldEndIndex, insertSegments);
                 myEditor.repaint(invalidatedStart, invalidatedEnd);
             }
         } else {
