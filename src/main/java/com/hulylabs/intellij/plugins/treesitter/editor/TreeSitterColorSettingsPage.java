@@ -64,6 +64,7 @@ public class TreeSitterColorSettingsPage implements ColorSettingsPage, DisplayPr
         new AttributesDescriptor("Escape", TreeSitterHighlightingColors.ESCAPE),
         new AttributesDescriptor("Function", TreeSitterHighlightingColors.FUNCTION),
         new AttributesDescriptor("Function//Builtin", TreeSitterHighlightingColors.FUNCTION_BUILTIN),
+        new AttributesDescriptor("Function//Call", TreeSitterHighlightingColors.FUNCTION_CALL),
         new AttributesDescriptor("Keyword", TreeSitterHighlightingColors.KEYWORD),
         new AttributesDescriptor("Operator", TreeSitterHighlightingColors.OPERATOR),
         new AttributesDescriptor("Tag", TreeSitterHighlightingColors.TAG),
