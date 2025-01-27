@@ -1,6 +1,8 @@
 package com.hulylabs.treesitter.language
 
 import com.hulylabs.treesitter.query.Query
+import com.hulylabs.treesitter.rusty.TreeSitterNativeLanguageRegistry
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import kotlinx.coroutines.CoroutineScope
@@ -64,6 +66,8 @@ class LanguageRegistry(
                     val constructor = clazz.getConstructor()
                     val tsLanguage = constructor.newInstance() as TSLanguage
                     val language = Language(tsLanguage, languageName, languageHighlights)
+                    language.nativeLanguageId = ApplicationManager.getApplication().getService(TreeSitterNativeLanguageRegistry::class.java)
+                        .registerLanguage(languageName, tsLanguage)
                     launch {
                         val queryData = withContext(Dispatchers.IO) {
                             Language::class.java.getResource("/queries/$languageName/indents.scm")?.readBytes()
@@ -80,6 +84,16 @@ class LanguageRegistry(
                         if (queryData != null) {
                             val query = Query(tsLanguage, queryData, mapOf())
                             language.setFoldQuery(query)
+                        }
+                    }
+                    launch {
+                        val queryData = withContext(Dispatchers.IO) {
+                            Language::class.java.getResource("/queries/$languageName/highlights.scm")?.readBytes()
+                        }
+                        if (queryData != null) {
+                            val captureNames = ApplicationManager.getApplication().getService(TreeSitterNativeLanguageRegistry::class.java)
+                                .addHighlightQuery(language.nativeLanguageId, queryData)
+                            language.nativeHighlights = captureNames
                         }
                     }
                     languages[languageName] = language

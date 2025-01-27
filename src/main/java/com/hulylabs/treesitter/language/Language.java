@@ -6,7 +6,9 @@ import org.treesitter.TSLanguage;
 import org.treesitter.TSParser;
 import org.treesitter.TSSymbolType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Language {
     public static final int ERROR_SYMBOL = 65535;
@@ -15,6 +17,7 @@ public class Language {
     private final ArrayList<Integer> visibleSymbols;
     private final int[] visibleSymbolLookup;
     private final Map<Integer, String> highlights;
+    private String[] nativeHighlights;
     private Query indentQuery;
     private int indentCaptureId = -1;
     private int indentStartCaptureId = -1;
@@ -23,6 +26,7 @@ public class Language {
     private int foldCaptureId = -1;
     private int foldStartCaptureId = -1;
     private int foldEndCaptureId = -1;
+    private Long nativeLanguageId;
 
     public Language(TSLanguage language, String languageName, Map<LanguageSymbol, String> highlights) {
         this.language = language;
@@ -139,5 +143,21 @@ public class Language {
 
     public Map<Integer, String> getHighlights() {
         return highlights;
+    }
+
+    public Long getNativeLanguageId() {
+        return nativeLanguageId;
+    }
+
+    void setNativeLanguageId(long nativeLanguageId) {
+        this.nativeLanguageId = nativeLanguageId;
+    }
+
+    void setNativeHighlights(String[] nativeHighlights) {
+        this.nativeHighlights = nativeHighlights;
+    }
+
+    public String[] getNativeHighlights() {
+        return nativeHighlights;
     }
 }

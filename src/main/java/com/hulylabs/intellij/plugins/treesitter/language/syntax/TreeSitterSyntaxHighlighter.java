@@ -2,6 +2,7 @@ package com.hulylabs.intellij.plugins.treesitter.language.syntax;
 
 import com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterHighlightingColors;
 import com.hulylabs.treesitter.language.Language;
+import com.hulylabs.treesitter.rusty.TreeSitterNativeHighlightLexer;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
@@ -10,9 +11,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TreeSitterSyntaxHighlighter {
+    private static final TextAttributesKey[] EMPTY_ARRAY = new TextAttributesKey[0];
     private final Language language;
     private final Map<Short, TextAttributesKey[]> attributes;
     private final TreeSitterCaptureElementType[] symbolElementMap;
+    private final Map<Short, IElementType> nativeAttributes = new HashMap<>();
     private TreeSitterLexer lexer;
 
     public TreeSitterSyntaxHighlighter(Language language) {
@@ -29,6 +32,19 @@ public class TreeSitterSyntaxHighlighter {
                 attributes.put(elementType.getGroupId(), new TextAttributesKey[]{colors.getTextAttributesKey(entry.getValue())});
             }
         }
+        short index = 0;
+        for (String captureName : language.getNativeHighlights()) {
+            var elementType = TreeSitterCaptureElementType.findOrCreate(captureName);
+            nativeAttributes.put(index, elementType);
+            if (!attributes.containsKey(elementType.getGroupId())) {
+                attributes.put(elementType.getGroupId(), new TextAttributesKey[]{colors.getTextAttributesKey(captureName)});
+            }
+            index++;
+        }
+    }
+
+    public Language getLanguage() {
+        return language;
     }
 
     public @NotNull TreeSitterLexer getHighlightingLexer() {
@@ -46,6 +62,28 @@ public class TreeSitterSyntaxHighlighter {
                 return symbolAttributes;
             }
         }
-        return new TextAttributesKey[0];
+        return EMPTY_ARRAY;
+    }
+
+    public IElementType getTokenType(TreeSitterNativeHighlightLexer.Token token) {
+        if (token.captureId() < 0) {
+            return TreeSitterCaptureElementType.NONE;
+        }
+        if (nativeAttributes.containsKey(token.captureId())) {
+            return nativeAttributes.get(token.captureId());
+        } else {
+            var nativeHighlights = language.getNativeHighlights();
+            if (nativeHighlights != null && nativeHighlights.length > token.captureId()) {
+                TreeSitterCaptureElementType elementType = TreeSitterCaptureElementType.findOrCreate(nativeHighlights[token.captureId()]);
+                nativeAttributes.put(token.captureId(), elementType);
+                if (!attributes.containsKey(elementType.getGroupId())) {
+                    TreeSitterHighlightingColors colors = TreeSitterHighlightingColors.getInstance();
+                    attributes.put(elementType.getGroupId(), new TextAttributesKey[]{colors.getTextAttributesKey(nativeHighlights[token.captureId()])});
+                }
+                return elementType;
+            } else {
+                return TreeSitterCaptureElementType.NONE;
+            }
+        }
     }
 }
