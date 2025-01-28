@@ -32,14 +32,17 @@ public class TreeSitterSyntaxHighlighter {
                 attributes.put(elementType.getGroupId(), new TextAttributesKey[]{colors.getTextAttributesKey(entry.getValue())});
             }
         }
-        short index = 0;
-        for (String captureName : language.getNativeHighlights()) {
-            var elementType = TreeSitterCaptureElementType.findOrCreate(captureName);
-            nativeAttributes.put(index, elementType);
-            if (!attributes.containsKey(elementType.getGroupId())) {
-                attributes.put(elementType.getGroupId(), new TextAttributesKey[]{colors.getTextAttributesKey(captureName)});
+        String[] nativeHighlights = language.getNativeHighlights();
+        if (nativeHighlights != null) {
+            short index = 0;
+            for (String captureName : language.getNativeHighlights()) {
+                var elementType = TreeSitterCaptureElementType.findOrCreate(captureName);
+                nativeAttributes.put(index, elementType);
+                if (!attributes.containsKey(elementType.getGroupId())) {
+                    attributes.put(elementType.getGroupId(), new TextAttributesKey[]{colors.getTextAttributesKey(captureName)});
+                }
+                index++;
             }
-            index++;
         }
     }
 
