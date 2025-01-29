@@ -24,13 +24,13 @@
 ; Special identifiers
 ;--------------------
 ((identifier) @type
-  (#match? @type "^[A-Z].*"))
+  (#match? @type "^[A-Z]"))
 
 ((identifier) @constant
-  (#match? @constant "^_*[A-Z][A-Z\d_]*$"))
+  (#match? @constant "^_*[A-Z][A-Z\\d_]*$"))
 
 ((shorthand_property_identifier) @constant
-  (#match? @constant "^_*[A-Z][A-Z\d_]*$"))
+  (#match? @constant "^_*[A-Z][A-Z\\d_]*$"))
 
 ((identifier) @variable.builtin
   (#any-of? @variable.builtin "arguments" "module" "console" "window" "document"))

@@ -75,10 +75,10 @@
 (namespace_name) @module
 
 ((property_name) @variable
-  (#match? @variable "^[-][-].*"))
+  (#match? @variable "^[-][-]"))
 
 ((plain_value) @variable
-  (#match? @variable "^[-][-].*"))
+  (#match? @variable "^[-][-]"))
 
 [
   (string_value)
