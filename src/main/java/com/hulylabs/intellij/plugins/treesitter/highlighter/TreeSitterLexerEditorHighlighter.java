@@ -4,10 +4,12 @@
 package com.hulylabs.intellij.plugins.treesitter.highlighter;
 
 import com.hulylabs.intellij.plugins.treesitter.TreeSitterStorageUtil;
-import com.hulylabs.intellij.plugins.treesitter.language.syntax.TreeSitterLexer;
+import com.hulylabs.intellij.plugins.treesitter.language.syntax.TreeSitterCaptureElementType;
 import com.hulylabs.intellij.plugins.treesitter.language.syntax.TreeSitterSyntaxHighlighter;
-import com.hulylabs.treesitter.language.*;
-import com.hulylabs.treesitter.rusty.TreeSitterNativeHighlightLexer;
+import com.hulylabs.treesitter.language.InputEdit;
+import com.hulylabs.treesitter.language.Language;
+import com.hulylabs.treesitter.language.Point;
+import com.hulylabs.treesitter.language.SyntaxSnapshot;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
@@ -21,7 +23,6 @@ import com.intellij.openapi.editor.highlighter.HighlighterIterator;
 import com.intellij.openapi.editor.impl.EditorDocumentPriorities;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.progress.ProcessCanceledException;
-import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.UserDataHolder;
 import com.intellij.openapi.util.UserDataHolderBase;
@@ -42,7 +43,6 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
     private HighlighterClient myEditor;
     private CharSequence myText;
     private SegmentArrayWithData mySegments;
-    private final TreeSitterLexer myLexer;
     private final Map<IElementType, TextAttributes> myAttributesMap = new HashMap<>();
     private final Map<IElementType, TextAttributesKey[]> myKeysMap = new HashMap<>();
     // Temporary data holder to store the tree before the editor is attached
@@ -52,7 +52,6 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
 
     public TreeSitterLexerEditorHighlighter(Language language, EditorColorsScheme scheme) {
         myHighlighter = new TreeSitterSyntaxHighlighter(language);
-        myLexer = myHighlighter.getHighlightingLexer();
         mySegments = createSegments();
         myScheme = scheme;
     }
@@ -121,10 +120,6 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
             mySegments.removeAll();
             throw e;
         }
-    }
-
-    private static boolean segmentsEqual(@NotNull SegmentArrayWithData a1, int idx1, @NotNull SegmentArrayWithData a2, int idx2, int offsetShift) {
-        return a1.getSegmentStart(idx1) + offsetShift == a2.getSegmentStart(idx2) && a1.getSegmentEnd(idx1) + offsetShift == a2.getSegmentEnd(idx2) && a1.getSegmentData(idx1) == a2.getSegmentData(idx2);
     }
 
     private static class TreeSitterPositionCounter implements IntConsumer {
@@ -210,17 +205,7 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
             }
             int shift = edit.getNewEndOffset() - edit.getOldEndOffset();
             if (invalidatedStart == -1) {
-                int segmentIndexStart = mySegments.findSegmentIndex(rangeStart);
-                if (rangeEnd <= mySegments.getSegmentEnd(segmentIndexStart)) {
-                    int data = mySegments.getSegmentData(segmentIndexStart);
-                    int segmentStart = mySegments.getSegmentStart(segmentIndexStart);
-                    int segmentEnd = mySegments.getSegmentEnd(segmentIndexStart) + shift;
-                    mySegments.setElementAt(segmentIndexStart, segmentStart, segmentEnd, data);
-                    if (segmentIndexStart + 1 < mySegments.getSegmentCount()) {
-                        mySegments.shiftSegments(segmentIndexStart + 1, shift);
-                    }
-                    myEditor.repaint(segmentStart, segmentEnd);
-                }
+                setText(text);
             } else {
                 int segmentIndexStart = mySegments.findSegmentIndex(invalidatedStart);
                 int oldEndIndex = mySegments.findSegmentIndex(invalidatedEnd - shift);
@@ -247,97 +232,19 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
                         mySegments.insert(insertSegments, segmentIndexStart + 1);
                     }
                 }
-                myEditor.repaint(invalidatedStart, invalidatedEnd);
+                if (myEditor != null && !ApplicationManager.getApplication().isHeadlessEnvironment()) {
+                    int finalInvalidatedStart = invalidatedStart;
+                    int finalInvalidatedEnd = invalidatedEnd;
+                    UIUtil.invokeLaterIfNeeded(() -> myEditor.repaint(finalInvalidatedStart, finalInvalidatedEnd));
+                }
             }
         } else {
-            int segmentIndex = mySegments.findSegmentIndex(eventOffset) - 2;
-            int oldStartIndex = Math.max(0, segmentIndex);
-            int startIndex = oldStartIndex;
-
-            int data;
-            do {
-                data = mySegments.getSegmentData(startIndex);
-                if (data >= 0 || startIndex == 0) break;
-                startIndex--;
-            } while (true);
-
-            int startOffset = mySegments.getSegmentStart(startIndex);
-            int textLength = text.length();
-
-            myLexer.start(newSnapshot, startOffset, textLength);
-            for (IElementType tokenType = myLexer.getTokenType(); tokenType != null; tokenType = myLexer.getTokenType()) {
-                if (startIndex >= oldStartIndex) break;
-                if (myLexer.getTokenStart() == myLexer.getTokenEnd()) {
-                    myLexer.advance();
-                    continue;
-                }
-
-                int tokenStart = myLexer.getTokenStart();
-                int tokenEnd = myLexer.getTokenEnd();
-
-                data = mySegments.packData(tokenType, 0, true);
-                if (mySegments.getSegmentStart(startIndex) != tokenStart || mySegments.getSegmentEnd(startIndex) != tokenEnd || mySegments.getSegmentData(startIndex) != data) {
-                    break;
-                }
-                startIndex++;
-                myLexer.advance();
-            }
-            startOffset = mySegments.getSegmentStart(startIndex);
-            SegmentArrayWithData insertSegments = new SegmentArrayWithData(mySegments.createStorage());
-
-            int repaintEnd = -1;
-            int insertSegmentCount = 0;
-            int oldEndIndex = -1;
-            int shift = edit.getNewEndOffset() - edit.getOldEndOffset();
-            int newEndOffset = edit.getNewEndOffset();
-            int lastSegmentOffset = mySegments.getLastValidOffset();
-            for (IElementType tokenType = myLexer.getTokenType(); tokenType != null; tokenType = myLexer.getTokenType()) {
-                int tokenStart = myLexer.getTokenStart();
-                int tokenEnd = myLexer.getTokenEnd();
-                if (tokenStart == tokenEnd) {
-                    myLexer.advance();
-                    continue;
-                }
-
-                data = mySegments.packData(tokenType, 0, true);
-                int shiftedTokenStart = tokenStart - shift;
-                if (tokenStart >= newEndOffset && shiftedTokenStart < lastSegmentOffset) {
-                    int index = mySegments.findSegmentIndex(shiftedTokenStart);
-                    if (mySegments.getSegmentStart(index) == shiftedTokenStart && mySegments.getSegmentData(index) == data) {
-                        repaintEnd = tokenStart;
-                        oldEndIndex = index;
-                        break;
-                    }
-                }
-                insertSegments.setElementAt(insertSegmentCount, tokenStart, tokenEnd, data);
-                insertSegmentCount++;
-                myLexer.advance();
-            }
-
-            if (repaintEnd > 0) {
-                while (insertSegmentCount > 0 && oldEndIndex > startIndex) {
-                    if (!segmentsEqual(mySegments, oldEndIndex - 1, insertSegments, insertSegmentCount - 1, shift)) {
-                        break;
-                    }
-                    insertSegmentCount--;
-                    oldEndIndex--;
-                    repaintEnd = insertSegments.getSegmentStart(insertSegmentCount);
-                    insertSegments.remove(insertSegmentCount, insertSegmentCount + 1);
-                }
-            }
-
-            if (repaintEnd == -1) {
-                repaintEnd = textLength;
-            }
-
-            if (oldEndIndex < 0) {
-                oldEndIndex = mySegments.getSegmentCount();
-            }
-            mySegments.shiftSegments(oldEndIndex, shift);
-            mySegments.replace(startIndex, oldEndIndex, insertSegments);
-
-            if (insertSegmentCount != 0 && (oldEndIndex != startIndex + 1 || insertSegmentCount != 1 || data != mySegments.getSegmentData(startIndex))) {
-                myEditor.repaint(startOffset, repaintEnd);
+            mySegments.removeAll();
+            int data = mySegments.packData(TreeSitterCaptureElementType.NONE, 0, true);
+            mySegments.setElementAt(0, 0, document.getTextLength(), data);
+            if (myEditor != null && !ApplicationManager.getApplication().isHeadlessEnvironment()) {
+                int textLength = document.getTextLength();
+                UIUtil.invokeLaterIfNeeded(() -> myEditor.repaint(0, textLength));
             }
         }
     }
@@ -364,7 +271,7 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
             return;
         }
         TreeSitterStorageUtil.INSTANCE.setCurrentSnapshot(activeDataHolder, newSnapshot);
-        var tokens = newSnapshot.collectNativeHighlights( text, 0, textLength);
+        var tokens = newSnapshot.collectNativeHighlights(text, 0, textLength);
         if (tokens != null) {
             int i = 0;
             for (var token : tokens) {
@@ -374,29 +281,14 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
                 i++;
             }
         } else {
-            myLexer.start(newSnapshot, 0, textLength);
-            int i = 0;
-            while (true) {
-                IElementType tokenType = myLexer.getTokenType();
-                if (tokenType == null) break;
-                if (myLexer.getTokenStart() == myLexer.getTokenEnd()) {
-                    myLexer.advance();
-                    continue;
-                }
-                int data = tempSegments.packData(tokenType, 0, true);
-                tempSegments.setElementAt(i, myLexer.getTokenStart(), myLexer.getTokenEnd(), data);
-                i++;
-                if (i % 1024 == 0) {
-                    ProgressManager.checkCanceled();
-                }
-                myLexer.advance();
-            }
+            int data = tempSegments.packData(TreeSitterCaptureElementType.NONE, 0, true);
+            tempSegments.setElementAt(0, 0, textLength, data);
         }
         myText = text;
         mySegments = tempSegments;
 
         if (textLength > 0 && (mySegments.getSegmentCount() == 0 || mySegments.getLastValidOffset() != textLength)) {
-            throw new IllegalStateException("Unexpected termination offset for lexer " + myLexer);
+            throw new IllegalStateException("Unexpected termination offset");
         }
 
         if (myEditor != null && !ApplicationManager.getApplication().isHeadlessEnvironment()) {

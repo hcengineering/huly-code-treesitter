@@ -53,21 +53,21 @@ class LanguageRegistry(
                     LOG.warn("No className found for $languageName")
                     continue
                 }
-                val highlightsText = withContext(Dispatchers.IO) {
-                    Language::class.java.getResource("/queries/$languageName/highlights-simple.scm")?.readText()
+                val highlightsData = withContext(Dispatchers.IO) {
+                    Language::class.java.getResource("/queries/$languageName/highlights.scm")?.readBytes()
                 }
-                if (highlightsText == null) {
-                    LOG.warn("No highlights-simple.scm found for $languageName")
+                if (highlightsData == null) {
+                    LOG.warn("No highlights.scm found for $languageName")
                     continue
                 }
-                val languageHighlights = parseSimpleQuery(highlightsText)
                 try {
                     val clazz = pluginClassLoader.loadClass(className)
                     val constructor = clazz.getConstructor()
                     val tsLanguage = constructor.newInstance() as TSLanguage
-                    val language = Language(tsLanguage, languageName, languageHighlights)
-                    language.nativeLanguageId = ApplicationManager.getApplication().getService(TreeSitterNativeLanguageRegistry::class.java)
-                        .registerLanguage(languageName, tsLanguage)
+                    val language = Language(tsLanguage, languageName)
+                    val registry = ApplicationManager.getApplication().getService(TreeSitterNativeLanguageRegistry::class.java)
+                    language.nativeLanguageId = registry.registerLanguage(languageName, tsLanguage)
+                    language.nativeHighlights = registry.addHighlightQuery(language.nativeLanguageId, highlightsData)
                     launch {
                         val queryData = withContext(Dispatchers.IO) {
                             Language::class.java.getResource("/queries/$languageName/indents.scm")?.readBytes()
@@ -84,16 +84,6 @@ class LanguageRegistry(
                         if (queryData != null) {
                             val query = Query(tsLanguage, queryData, mapOf())
                             language.setFoldQuery(query)
-                        }
-                    }
-                    launch {
-                        val queryData = withContext(Dispatchers.IO) {
-                            Language::class.java.getResource("/queries/$languageName/highlights.scm")?.readBytes()
-                        }
-                        if (queryData != null) {
-                            val captureNames = ApplicationManager.getApplication().getService(TreeSitterNativeLanguageRegistry::class.java)
-                                .addHighlightQuery(language.nativeLanguageId, queryData)
-                            language.nativeHighlights = captureNames
                         }
                     }
                     languages[languageName] = language

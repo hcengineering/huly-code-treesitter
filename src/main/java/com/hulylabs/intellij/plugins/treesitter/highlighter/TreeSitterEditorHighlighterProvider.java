@@ -12,34 +12,20 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-
 public class TreeSitterEditorHighlighterProvider implements EditorHighlighterProvider {
-    private final HashMap<String, EditorHighlighter> highlighters = new HashMap<>();
-
     @Override
     public EditorHighlighter getEditorHighlighter(@Nullable Project project, @NotNull FileType fileType, @Nullable VirtualFile virtualFile, @NotNull EditorColorsScheme colors) {
         if (virtualFile == null) {
             SyntaxHighlighter highlighter = SyntaxHighlighterFactory.getSyntaxHighlighter(fileType, project, null);
             return new LexerEditorHighlighter(highlighter != null ? highlighter : new PlainSyntaxHighlighter(), colors);
         }
-        synchronized (highlighters) {
-            if (highlighters.containsKey(virtualFile.getUrl())) {
-                return highlighters.get(virtualFile.getUrl());
-            }
-        }
 
         String extension = virtualFile.getExtension();
-
 
         if (extension != null) {
             Language language = ApplicationManager.getApplication().getService(LanguageRegistry.class).getLanguage(extension);
             if (language != null) {
-                var highlighter = new TreeSitterLexerEditorHighlighter(language, colors);
-                synchronized (highlighters) {
-                    highlighters.put(virtualFile.getUrl(), highlighter);
-                }
-                return highlighter;
+                return new TreeSitterLexerEditorHighlighter(language, colors);
             }
         }
         SyntaxHighlighter highlighter = SyntaxHighlighterFactory.getSyntaxHighlighter(fileType, project, virtualFile);

@@ -14,9 +14,7 @@ public class TreeSitterSyntaxHighlighter {
     private static final TextAttributesKey[] EMPTY_ARRAY = new TextAttributesKey[0];
     private final Language language;
     private final Map<Short, TextAttributesKey[]> attributes;
-    private final TreeSitterCaptureElementType[] symbolElementMap;
     private final Map<Short, IElementType> nativeAttributes = new HashMap<>();
-    private TreeSitterLexer lexer;
 
     public TreeSitterSyntaxHighlighter(Language language) {
         super();
@@ -24,14 +22,6 @@ public class TreeSitterSyntaxHighlighter {
 
         TreeSitterHighlightingColors colors = TreeSitterHighlightingColors.getInstance();
         this.attributes = new HashMap<>();
-        this.symbolElementMap = new TreeSitterCaptureElementType[language.getVisibleSymbolCount()];
-        for (Map.Entry<Integer, String> entry : language.getHighlights().entrySet()) {
-            var elementType = TreeSitterCaptureElementType.findOrCreate(entry.getValue());
-            symbolElementMap[entry.getKey()] = elementType;
-            if (!attributes.containsKey(elementType.getGroupId())) {
-                attributes.put(elementType.getGroupId(), new TextAttributesKey[]{colors.getTextAttributesKey(entry.getValue())});
-            }
-        }
         String[] nativeHighlights = language.getNativeHighlights();
         if (nativeHighlights != null) {
             short index = 0;
@@ -48,13 +38,6 @@ public class TreeSitterSyntaxHighlighter {
 
     public Language getLanguage() {
         return language;
-    }
-
-    public @NotNull TreeSitterLexer getHighlightingLexer() {
-        if (lexer == null) {
-            lexer = new TreeSitterLexer(language, symbolElementMap);
-        }
-        return lexer;
     }
 
     public TextAttributesKey @NotNull [] getTokenHighlights(IElementType tokenType) {
