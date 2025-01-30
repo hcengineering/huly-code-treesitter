@@ -2,7 +2,7 @@ package com.hulylabs.treesitter
 
 import org.treesitter.TSParser
 
-object TreeSitterParsersPool {
+internal object TreeSitterParsersPool {
     private val parsers: MutableList<TSParser> = mutableListOf()
 
     fun <T> withParser(func: (TSParser) -> T): T {

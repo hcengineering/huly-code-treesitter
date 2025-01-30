@@ -1,7 +1,9 @@
 package com.hulylabs.treesitter.rusty;
 
+import com.hulylabs.treesitter.language.SyntaxSnapshot;
 import com.intellij.util.text.CharArrayUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.treesitter.TSTree;
 
 import java.util.Iterator;

@@ -2,11 +2,12 @@ package com.hulylabs.intellij.plugins.treesitter.editor
 
 import com.hulylabs.intellij.plugins.treesitter.TreeSitterStorageUtil
 import com.hulylabs.intellij.plugins.treesitter.language.TreeSitterLanguage
-import com.hulylabs.treesitter.language.LanguageRegistry
+import com.hulylabs.treesitter.language.Point
+import com.hulylabs.treesitter.language.Range
+import com.hulylabs.treesitter.language.SyntaxSnapshot
 import com.intellij.application.options.CodeStyle
 import com.intellij.formatting.IndentInfo
 import com.intellij.lang.Language
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -14,38 +15,7 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.codeStyle.lineIndent.LineIndentProvider
 import com.intellij.util.DocumentUtil
 import com.intellij.util.text.CharArrayUtil
-import org.treesitter.TSPoint
 import kotlin.math.min
-
-private operator fun TSPoint.compareTo(other: TSPoint): Int {
-    if (row == other.row) {
-        return column.compareTo(other.column)
-    } else {
-        return row.compareTo(other.row)
-    }
-}
-
-private fun TSPoint.toCharOffsets(): TSPoint {
-    return TSPoint(row, column / 2)
-}
-
-data class IndentRange(val start: TSPoint, var end: TSPoint) : Comparable<IndentRange> {
-    override fun compareTo(other: IndentRange): Int {
-        return start.compareTo(other.start)
-    }
-
-    fun contains(point: TSPoint): Boolean {
-        return (start <= point && point < end)
-    }
-}
-
-private fun max(a: TSPoint, b: TSPoint): TSPoint {
-    return if (a > b) {
-        a
-    } else {
-        b
-    }
-}
 
 private fun getIndentInfo(
     document: Document, line: Int, indentSpaces: Int, tabSize: Int
@@ -62,54 +32,45 @@ private fun getIndentInfo(
 class TreeSitterLineIndentProvider : LineIndentProvider {
     override fun getLineIndent(project: Project, editor: Editor, language: Language?, offset: Int): String? {
         val languageTree =
-            TreeSitterStorageUtil.getTreeForTimestamp(editor.document, editor.document.modificationStamp) ?: return null
+            TreeSitterStorageUtil.getSnapshotForTimestamp(editor.document, editor.document.modificationStamp) ?: return null
+        val snapshot = SyntaxSnapshot(languageTree.tree, languageTree.language, editor.document.modificationStamp)
         val document = editor.document
-        val query = languageTree.language.indentQuery ?: return null
         val line = document.getLineNumber(offset)
         val previousContentLine =
             IntProgression.fromClosedRange(line - 1, 0, -1).find { !DocumentUtil.isLineEmpty(document, it) }
 
         val indentRangesStartOffset = document.getLineStartOffset(previousContentLine ?: line)
         val indentRangesEndOffset = document.getLineEndOffset(line)
-        val indentRanges: MutableList<IndentRange> = mutableListOf()
-        for (match in query.getMatches(languageTree.tree, languageTree.tree.rootNode, indentRangesStartOffset, indentRangesEndOffset)) {
-            var startPoint: TSPoint? = null
-            var endPoint: TSPoint? = null
-            for (capture in match.captures) {
-                if (capture.index == languageTree.language.indentCaptureId) {
-                    startPoint = startPoint ?: capture.node.startPoint
-                    endPoint = endPoint ?: capture.node.endPoint
-                } else if (capture.index == languageTree.language.indentStartCaptureId) {
-                    startPoint = capture.node.endPoint
-                } else if (capture.index == languageTree.language.indentEndCaptureId) {
-                    endPoint = capture.node.startPoint
-                }
-            }
-            if (startPoint == null || endPoint == null || startPoint.row == endPoint.row) {
-                continue
-            }
-            val range = IndentRange(startPoint.toCharOffsets(), endPoint.toCharOffsets())
-            val searchResult = indentRanges.binarySearch(range)
+        val indentRanges: MutableList<Range> = mutableListOf()
+        for (range in snapshot.getIndentRanges(indentRangesStartOffset, indentRangesEndOffset) ?: return null) {
+            val searchResult = indentRanges.binarySearchBy(range.startPoint) { it.startPoint }
             if (searchResult >= 0) {
-                indentRanges[searchResult].end = max(indentRanges[searchResult].end, range.end)
+                val existingRange = indentRanges[searchResult]
+                indentRanges[searchResult] = Range(
+                    existingRange.startOffset,
+                    Math.max(existingRange.endOffset, range.endOffset),
+                    existingRange.startPoint,
+                    Point.max(existingRange.endPoint, range.endPoint)
+                )
             } else {
                 indentRanges.add(-(searchResult + 1), range)
             }
         }
-        val indentPoint = TSPoint(
+        val indentPoint = Point(
             line, DocumentUtil.getIndentLength(document, document.getLineStartOffset(line))
         )
         val previousLine = previousContentLine ?: 0
-        val previousLineIndentPoint = TSPoint(previousLine, DocumentUtil.getIndentLength(document, document.getLineStartOffset(previousLine)))
+        val previousLineIndentPoint =
+            Point(previousLine, DocumentUtil.getIndentLength(document, document.getLineStartOffset(previousLine)))
 
         var addIndent = false
         var outdentToLine: Int? = null
         for (range in indentRanges) {
-            if (range.start.row == previousLine && range.end > indentPoint) {
+            if (range.startPoint.row == previousLine && range.endPoint > indentPoint) {
                 addIndent = true
             }
-            if (range.end > previousLineIndentPoint && range.end <= indentPoint) {
-                outdentToLine = outdentToLine?.let { min(it, range.start.row) } ?: range.start.row
+            if (range.endPoint > previousLineIndentPoint && range.endPoint <= indentPoint) {
+                outdentToLine = outdentToLine?.let { min(it, range.startPoint.row) } ?: range.startPoint.row
             }
         }
 

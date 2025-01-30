@@ -3,6 +3,7 @@ package com.hulylabs.intellij.plugins.treesitter.editor
 import com.hulylabs.intellij.plugins.treesitter.TreeSitterStorageUtil
 import com.hulylabs.intellij.plugins.treesitter.language.TreeSitterFileType
 import com.hulylabs.intellij.plugins.treesitter.language.TreeSitterLanguage
+import com.hulylabs.treesitter.language.SyntaxSnapshot
 import com.intellij.codeInsight.CodeInsightSettings
 import com.intellij.codeInsight.editorActions.EnterHandler
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegate
@@ -42,44 +43,22 @@ class TreeSitterEnterHandler : EnterHandlerDelegate {
         }
         val document = editor.document
         val text = document.immutableCharSequence
-        val languageTree = TreeSitterStorageUtil.getTreeForTimestamp(document, document.modificationStamp)
+        val languageTree = TreeSitterStorageUtil.getSnapshotForTimestamp(document, document.modificationStamp)
             ?: return EnterHandlerDelegate.Result.Continue
+        val snapshot = SyntaxSnapshot(languageTree.tree, languageTree.language, document.modificationStamp)
 
-        val language = languageTree.language
         if (caretOffset.get() - 1 >= 0 && text[caretOffset.get() - 1] == '\n') {
             caretOffset.set(caretOffset.get() - 1)
         }
-        val line = document.getLineNumber(caretOffset.get())
-        val query = language.indentQuery ?: return EnterHandlerDelegate.Result.Continue
-        val queryStartOffset = DocumentUtil.getLineStartOffset(caretOffset.get(), document)
-        val queryEndOffset = DocumentUtil.getLineEndOffset(caretOffset.get(), document)
-        val matchesIterator = query.getMatches(languageTree.tree, languageTree.tree.rootNode, queryStartOffset, queryEndOffset)
         val offset = caretOffset.get()
+        val line = document.getLineNumber(offset)
+        val searchStartOffset = DocumentUtil.getLineStartOffset(offset, document)
+        val searchEndOffset = DocumentUtil.getLineEndOffset(offset, document)
+
         val leftOffset = CharArrayUtil.shiftBackward(text, offset, " \t")
         val rightOffset = CharArrayUtil.shiftForward(text, offset, " \t")
-        for (match in matchesIterator) {
-            var startIndent: Int? = null
-            var endIndent: Int? = null
-            var startLine: Int? = null
-            var endLine: Int? = null
-            for (capture in match.captures) {
-                if (capture.index == language.indentCaptureId) {
-                    startIndent = startIndent ?: (capture.node.startByte / 2)
-                    endIndent = endIndent ?: (capture.node.endByte / 2)
-                    startLine = startLine ?: capture.node.startPoint.row
-                    endLine = endLine ?: capture.node.endPoint.row
-                } else if (capture.index == language.indentStartCaptureId) {
-                    startIndent = capture.node.endByte / 2
-                    startLine = capture.node.endPoint.row
-                } else if (capture.index == language.indentEndCaptureId) {
-                    endIndent = capture.node.startByte / 2
-                    endLine = capture.node.startPoint.row
-                }
-            }
-            if (startIndent == null || endIndent == null) {
-                continue
-            }
-            if (startLine == line && endLine == line && startIndent == leftOffset && rightOffset == endIndent) {
+        for (range in snapshot.getIndentRanges(searchStartOffset, searchEndOffset) ?: return EnterHandlerDelegate.Result.Continue) {
+            if (range.startPoint.row == line && range.startPoint.row == line && range.startOffset == leftOffset && rightOffset == range.endOffset) {
                 originalHandler?.execute(editor, editor.caretModel.currentCaret, dataContext)
                 return EnterHandlerDelegate.Result.DefaultForceIndent
             }

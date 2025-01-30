@@ -12,6 +12,7 @@ import java.util.Map;
 
 public class Language {
     public static final int ERROR_SYMBOL = 65535;
+    public static final int WHITESPACE_SYMBOL = 65534;
     private final TSLanguage language;
     private final String languageName;
     private final ArrayList<Integer> visibleSymbols;
@@ -67,19 +68,19 @@ public class Language {
         }
     }
 
-    public @Nullable Query getIndentQuery() {
+    @Nullable Query getIndentQuery() {
         return this.indentQuery;
     }
 
-    public int getIndentCaptureId() {
+    int getIndentCaptureId() {
         return this.indentCaptureId;
     }
 
-    public int getIndentStartCaptureId() {
+    int getIndentStartCaptureId() {
         return this.indentStartCaptureId;
     }
 
-    public int getIndentEndCaptureId() {
+    int getIndentEndCaptureId() {
         return this.indentEndCaptureId;
     }
 
@@ -102,19 +103,19 @@ public class Language {
         }
     }
 
-    public @Nullable Query getFoldQuery() {
+    @Nullable Query getFoldQuery() {
         return this.foldQuery;
     }
 
-    public int getFoldCaptureId() {
+    int getFoldCaptureId() {
         return this.foldCaptureId;
     }
 
-    public int getFoldStartCaptureId() {
+    int getFoldStartCaptureId() {
         return this.foldStartCaptureId;
     }
 
-    public int getFoldEndCaptureId() {
+    int getFoldEndCaptureId() {
         return this.foldEndCaptureId;
     }
 

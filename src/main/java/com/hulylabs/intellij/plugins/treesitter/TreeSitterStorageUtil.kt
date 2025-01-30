@@ -1,46 +1,49 @@
 package com.hulylabs.intellij.plugins.treesitter
 
-import com.hulylabs.treesitter.language.LanguageGeneratedTree
+import com.hulylabs.treesitter.language.SyntaxSnapshot
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolder
 
 object TreeSitterStorageUtil {
-    private val TREE_KEY_RAW = Key.create<LanguageGeneratedTree>("com.hulylabs.treeSitterTreeRaw")
-    private val TREE_KEY = Key.create<Pair<LanguageGeneratedTree, Long>>("com.hulylabs.treeSitterTree")
+    private val SYNTAX_SNAPSHOT_KEY_RAW = Key.create<SyntaxSnapshot>("com.hulylabs.syntaxSnapshotRaw")
+    private val SYNTAX_SNAPSHOT_KEY = Key.create<SyntaxSnapshot>("com.hulylabs.syntaxSnapshot")
 
-    fun getTreeForTimestamp(dataHolder: UserDataHolder, oldTimestamp: Long): LanguageGeneratedTree? {
+    fun getSnapshotForTimestamp(dataHolder: UserDataHolder, oldTimestamp: Long): SyntaxSnapshot? {
         if (dataHolder is Document) {
-            val tree = dataHolder.getUserData(TREE_KEY)
-            if (tree != null && tree.second == oldTimestamp) {
-                return tree.first
+            val syntaxSnapshot = dataHolder.getUserData(SYNTAX_SNAPSHOT_KEY)
+            if (syntaxSnapshot != null && syntaxSnapshot.timestamp == oldTimestamp) {
+                return syntaxSnapshot
             }
             return null
         } else {
-            return dataHolder.getUserData(TREE_KEY_RAW)
+            return dataHolder.getUserData(SYNTAX_SNAPSHOT_KEY_RAW)
         }
 
     }
 
-    fun setCurrentTree(dataHolder: UserDataHolder, tree: LanguageGeneratedTree) {
+    fun setCurrentSnapshot(dataHolder: UserDataHolder, syntaxSnapshot: SyntaxSnapshot) {
         if (dataHolder is Document) {
-            dataHolder.putUserData(TREE_KEY, Pair(tree, dataHolder.modificationStamp))
+            if (dataHolder.modificationStamp != syntaxSnapshot.timestamp) {
+                throw IllegalStateException("Document modification stamp does not match syntax snapshot timestamp")
+            }
+            dataHolder.putUserData(SYNTAX_SNAPSHOT_KEY, syntaxSnapshot)
         } else {
-            dataHolder.putUserData(TREE_KEY_RAW, tree)
+            dataHolder.putUserData(SYNTAX_SNAPSHOT_KEY_RAW, syntaxSnapshot)
         }
     }
 
-    fun moveTreeToDocument(dataHolder: UserDataHolder, document: Document) {
-        var tree: LanguageGeneratedTree? = null
+    fun moveSnapshotToDocument(dataHolder: UserDataHolder, document: Document) {
+        val syntaxSnapshot: SyntaxSnapshot?
         if (dataHolder is Document) {
-            dataHolder.getUserData(TREE_KEY)?.let { tree = it.first }
-            dataHolder.putUserData(TREE_KEY, null)
+            syntaxSnapshot = dataHolder.getUserData(SYNTAX_SNAPSHOT_KEY)
+            dataHolder.putUserData(SYNTAX_SNAPSHOT_KEY, null)
         } else {
-            dataHolder.getUserData(TREE_KEY_RAW)?.let { tree = it }
-            dataHolder.putUserData(TREE_KEY_RAW, null)
+            syntaxSnapshot = dataHolder.getUserData(SYNTAX_SNAPSHOT_KEY_RAW)
+            dataHolder.putUserData(SYNTAX_SNAPSHOT_KEY_RAW, null)
         }
-        if (tree != null) {
-            setCurrentTree(document, tree as LanguageGeneratedTree)
+        if (syntaxSnapshot != null) {
+            setCurrentSnapshot(document, syntaxSnapshot.withTimestamp(document.modificationStamp))
         }
     }
 }
