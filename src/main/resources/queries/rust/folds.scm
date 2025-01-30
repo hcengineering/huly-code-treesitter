@@ -1,6 +1,6 @@
-(declaration_list "{" @start "}" @ent) @fold
-(enum_variant_list "{" @start "}" @ent) @fold
-(field_declaration_list "{" @start "}" @ent) @fold
-(match_block "{" @start "}" @ent) @fold
-(block "{" @start "}" @ent) @fold
-(field_initializer_list "{" @start "}" @ent) @fold
+(declaration_list "{" @start "}" @end) @fold
+(enum_variant_list "{" @start "}" @end) @fold
+(field_declaration_list "{" @start "}" @end) @fold
+(match_block "{" @start "}" @end) @fold
+(block "{" @start "}" @end) @fold
+(field_initializer_list "{" @start "}" @end) @fold

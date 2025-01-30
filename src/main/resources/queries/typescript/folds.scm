@@ -1,6 +1,6 @@
-(statement_block "{" @start "}" @ent) @fold
-(switch_body "{" @start "}" @ent) @fold
-(object "{" @start "}" @ent) @fold
-(class_body "{" @start "}" @ent) @fold
-(enum_body "{" @start "}" @ent) @fold
-(interface_body "{" @start "}" @ent) @fold
+(statement_block "{" @start "}" @end) @fold
+(switch_body "{" @start "}" @end) @fold
+(object "{" @start "}" @end) @fold
+(class_body "{" @start "}" @end) @fold
+(enum_body "{" @start "}" @end) @fold
+(interface_body "{" @start "}" @end) @fold
