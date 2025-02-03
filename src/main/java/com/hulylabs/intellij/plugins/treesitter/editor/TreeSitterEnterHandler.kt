@@ -47,8 +47,10 @@ class TreeSitterEnterHandler : EnterHandlerDelegate {
             ?: return EnterHandlerDelegate.Result.Continue
         val snapshot = SyntaxSnapshot(languageTree.tree, languageTree.language, document.modificationStamp)
 
-        if (caretOffset.get() - 1 >= 0 && text[caretOffset.get() - 1] == '\n') {
-            caretOffset.set(caretOffset.get() - 1)
+        val originalOffset = caretOffset.get()
+        val originalLineStart = document.getLineStartOffset(document.getLineNumber(originalOffset))
+        if (originalOffset - 1 >= originalLineStart && text[originalOffset - 1] == '\n') {
+            caretOffset.set(originalOffset - 1)
         }
         val offset = caretOffset.get()
         val line = document.getLineNumber(offset)
