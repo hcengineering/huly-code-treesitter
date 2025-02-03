@@ -1,10 +1,7 @@
 package com.hulylabs.treesitter.rusty;
 
-import com.hulylabs.treesitter.language.SyntaxSnapshot;
 import com.intellij.util.text.CharArrayUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.treesitter.TSTree;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -51,10 +48,10 @@ public class TreeSitterNativeHighlightLexer {
         }
     }
 
-    private static native Tokens nativeCollectHighlights(long languageId, TSTree tree, char[] text, int startOffset, int endOffset);
+    private static native Tokens nativeCollectHighlights(TreeSitterNativeSyntaxSnapshot snapshot, char[] text, int startOffset, int endOffset);
 
-    public static Tokens collectHighlights(long languageId, @NotNull TSTree tree, @NotNull CharSequence text, int startOffset, int endOffset) {
+    public static Tokens collectHighlights(@NotNull TreeSitterNativeSyntaxSnapshot snapshot, @NotNull CharSequence text, int startOffset, int endOffset) {
         char[] chars = CharArrayUtil.fromSequence(text);
-        return nativeCollectHighlights(languageId, tree, chars, startOffset, endOffset);
+        return nativeCollectHighlights(snapshot, chars, startOffset, endOffset);
     }
 }

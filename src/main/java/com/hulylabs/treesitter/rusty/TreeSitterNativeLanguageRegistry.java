@@ -1,5 +1,6 @@
 package com.hulylabs.treesitter.rusty;
 
+import com.hulylabs.treesitter.language.Language;
 import com.intellij.openapi.components.Service;
 import org.jetbrains.annotations.NotNull;
 import org.treesitter.TSLanguage;
@@ -19,6 +20,10 @@ public final class TreeSitterNativeLanguageRegistry {
     private static native long nativeRegisterLanguage(String languageName, TSLanguage language);
 
     private static native String[] nativeAddHighlightQuery(long languageId, byte[] queryData);
+    private static native void nativeAddFoldQuery(long languageId, byte[] queryData);
+    private static native void nativeAddIndentQuery(long languageId, byte[] queryData);
+    private static native void nativeAddInjectionQuery(long languageId, byte[] queryData);
+
 
     public long registerLanguage(@NotNull String languageName, @NotNull TSLanguage language) {
         synchronized (languageIds) {
@@ -33,8 +38,20 @@ public final class TreeSitterNativeLanguageRegistry {
         return languageId;
     }
 
-    public String @NotNull [] addHighlightQuery(long languageId, byte @NotNull [] queryData) {
-        return nativeAddHighlightQuery(languageId, queryData);
+    public String @NotNull [] addHighlightQuery(Language language, byte @NotNull [] queryData) {
+        return nativeAddHighlightQuery(language.getNativeLanguageId(), queryData);
+    }
+
+    public void addFoldQuery(Language language, byte @NotNull [] queryData) {
+        nativeAddFoldQuery(language.getNativeLanguageId(), queryData);
+    }
+
+    public void addIndentQuery(Language language, byte @NotNull [] queryData) {
+        nativeAddIndentQuery(language.getNativeLanguageId(), queryData);
+    }
+
+    public void addInjectionQuery(Language language, byte @NotNull [] queryData) {
+         nativeAddInjectionQuery(language.getNativeLanguageId(), queryData);
     }
 
     public long getLanguageId(String languageName) {

@@ -1,6 +1,5 @@
 package com.hulylabs.treesitter.language
 
-import com.hulylabs.treesitter.query.Query
 import com.hulylabs.treesitter.rusty.TreeSitterNativeLanguageRegistry
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
@@ -22,16 +21,6 @@ class LanguageRegistry(
     private val LOG = Logger.getInstance(LanguageRegistry::class.java)
     private val extensions = HashMap<String, String>()
     private val languages = HashMap<String, Language>()
-
-    private fun parseSimpleQuery(queryText: String): Map<LanguageSymbol, String> {
-        return queryText.lineSequence().map { line ->
-            val split = line.trim().split(" ")
-            val nodeName = split[0].substring(1, split[0].length - 1)
-            val isNamed = split[0].startsWith('(') && split[0].endsWith(')')
-            val captureName = split[1].substring(1)
-            Pair(LanguageSymbol(nodeName, isNamed), captureName)
-        }.toMap()
-    }
 
     init {
         coroutineScope.launch {
@@ -64,17 +53,19 @@ class LanguageRegistry(
                     val clazz = pluginClassLoader.loadClass(className)
                     val constructor = clazz.getConstructor()
                     val tsLanguage = constructor.newInstance() as TSLanguage
-                    val language = Language(tsLanguage, languageName)
-                    val registry = ApplicationManager.getApplication().getService(TreeSitterNativeLanguageRegistry::class.java)
-                    language.nativeLanguageId = registry.registerLanguage(languageName, tsLanguage)
-                    language.nativeHighlights = registry.addHighlightQuery(language.nativeLanguageId, highlightsData)
+                    val registry =
+                        ApplicationManager.getApplication().getService(TreeSitterNativeLanguageRegistry::class.java)
+                    val language = Language(languageName, registry.registerLanguage(languageName, tsLanguage))
+
+                    language.nativeHighlights = registry.addHighlightQuery(language, highlightsData)
+                    languages[languageName] = language
                     launch {
                         val queryData = withContext(Dispatchers.IO) {
                             Language::class.java.getResource("/queries/$languageName/indents.scm")?.readBytes()
                         }
                         if (queryData != null) {
-                            val query = Query(tsLanguage, queryData, mapOf())
-                            language.setIndentQuery(query)
+                            ApplicationManager.getApplication().getService(TreeSitterNativeLanguageRegistry::class.java)
+                                .addIndentQuery(language, queryData)
                         }
                     }
                     launch {
@@ -82,11 +73,19 @@ class LanguageRegistry(
                             Language::class.java.getResource("/queries/$languageName/folds.scm")?.readBytes()
                         }
                         if (queryData != null) {
-                            val query = Query(tsLanguage, queryData, mapOf())
-                            language.setFoldQuery(query)
+                            ApplicationManager.getApplication().getService(TreeSitterNativeLanguageRegistry::class.java)
+                                .addFoldQuery(language, queryData)
                         }
                     }
-                    languages[languageName] = language
+                    launch {
+                        val queryData = withContext(Dispatchers.IO) {
+                            Language::class.java.getResource("/queries/$languageName/injections.scm")?.readBytes()
+                        }
+                        if (queryData != null) {
+                            ApplicationManager.getApplication().getService(TreeSitterNativeLanguageRegistry::class.java)
+                                .addInjectionQuery(language, queryData)
+                        }
+                    }
                 } catch (e: Exception) {
                     LOG.warn("Class not found for $languageName: $e")
                     continue

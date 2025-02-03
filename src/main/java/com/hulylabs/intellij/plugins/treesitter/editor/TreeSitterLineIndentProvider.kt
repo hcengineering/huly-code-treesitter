@@ -4,7 +4,6 @@ import com.hulylabs.intellij.plugins.treesitter.TreeSitterStorageUtil
 import com.hulylabs.intellij.plugins.treesitter.language.TreeSitterLanguage
 import com.hulylabs.treesitter.language.Point
 import com.hulylabs.treesitter.language.Range
-import com.hulylabs.treesitter.language.SyntaxSnapshot
 import com.intellij.application.options.CodeStyle
 import com.intellij.formatting.IndentInfo
 import com.intellij.lang.Language
@@ -31,9 +30,8 @@ private fun getIndentInfo(
 
 class TreeSitterLineIndentProvider : LineIndentProvider {
     override fun getLineIndent(project: Project, editor: Editor, language: Language?, offset: Int): String? {
-        val languageTree =
-            TreeSitterStorageUtil.getSnapshotForTimestamp(editor.document, editor.document.modificationStamp) ?: return null
-        val snapshot = SyntaxSnapshot(languageTree.tree, languageTree.language, editor.document.modificationStamp)
+        val snapshot = TreeSitterStorageUtil.getSnapshotForTimestamp(editor.document, editor.document.modificationStamp)
+            ?: return null
         val document = editor.document
         val line = document.getLineNumber(offset)
         val previousContentLine =
@@ -42,7 +40,9 @@ class TreeSitterLineIndentProvider : LineIndentProvider {
         val indentRangesStartOffset = document.getLineStartOffset(previousContentLine ?: line)
         val indentRangesEndOffset = document.getLineEndOffset(line)
         val indentRanges: MutableList<Range> = mutableListOf()
-        for (range in snapshot.getIndentRanges(indentRangesStartOffset, indentRangesEndOffset) ?: return null) {
+        for (range in snapshot.getIndentRanges(
+            document.immutableCharSequence, indentRangesStartOffset, indentRangesEndOffset
+        )) {
             val searchResult = indentRanges.binarySearchBy(range.startPoint) { it.startPoint }
             if (searchResult >= 0) {
                 val existingRange = indentRanges[searchResult]
