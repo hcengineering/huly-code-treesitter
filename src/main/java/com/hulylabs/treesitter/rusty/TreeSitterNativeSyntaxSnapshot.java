@@ -4,6 +4,7 @@ import com.hulylabs.treesitter.language.InputEdit;
 import com.hulylabs.treesitter.language.Language;
 import com.hulylabs.treesitter.language.Range;
 import com.intellij.util.text.CharArrayUtil;
+import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,33 +26,18 @@ public class TreeSitterNativeSyntaxSnapshot {
 
     private static native TreeSitterNativeSyntaxSnapshot nativeParse(char[] text, long baseLanguageId);
 
-    private static native TreeSitterNativeSyntaxSnapshot nativeParseWithOld(char[] text, TreeSitterNativeSyntaxSnapshot oldSnapshot);
-
-    private static native TreeSitterNativeSyntaxSnapshot nativeEdit(TreeSitterNativeSyntaxSnapshot snapshot, InputEdit edit);
+    private static native Pair<TreeSitterNativeSyntaxSnapshot, Range[]> nativeParseWithOld(char[] text, TreeSitterNativeSyntaxSnapshot oldSnapshot, InputEdit edit);
 
     private static native void nativeDestroy(long handle);
-
-    private static native Range[] nativeGetChangedRanges(TreeSitterNativeSyntaxSnapshot oldSnapshot, TreeSitterNativeSyntaxSnapshot snapshot);
 
     public static @Nullable TreeSitterNativeSyntaxSnapshot parse(@NotNull CharSequence text, Language baseLanguage) {
         char[] chars = CharArrayUtil.fromSequence(text);
         return nativeParse(chars, baseLanguage.getNativeLanguageId());
     }
 
-    public static @Nullable TreeSitterNativeSyntaxSnapshot parse(@NotNull CharSequence text, TreeSitterNativeSyntaxSnapshot oldSnapshot) {
+    public static @Nullable Pair<TreeSitterNativeSyntaxSnapshot, Range[]> parse(@NotNull CharSequence text, TreeSitterNativeSyntaxSnapshot oldSnapshot, InputEdit edit) {
         char[] chars = CharArrayUtil.fromSequence(text);
-        return nativeParseWithOld(chars, oldSnapshot);
-    }
-
-    public static @NotNull Range[] getChangedRanges(@NotNull TreeSitterNativeSyntaxSnapshot oldSnapshot, @NotNull TreeSitterNativeSyntaxSnapshot newSnapshot) {
-        if (oldSnapshot.baseLanguageId != newSnapshot.baseLanguageId) {
-            throw new IllegalArgumentException("Snapshots must be from the same language");
-        }
-        return nativeGetChangedRanges(oldSnapshot, newSnapshot);
-    }
-
-    public @NotNull TreeSitterNativeSyntaxSnapshot withEdit(@NotNull InputEdit edit) {
-        return nativeEdit(this, edit);
+        return nativeParseWithOld(chars, oldSnapshot, edit);
     }
 
     private static class NativeSyntaxSnapshotCleanAction implements Runnable {

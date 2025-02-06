@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class TreeSitterNativeHighlightLexer {
-    public record Token(int startOffset, int endOffset, short captureId, short nodeKind) {
+    public record Token(int startOffset, int endOffset, short captureId, short nodeKind, long languageId) {
     }
 
     public static class Tokens implements Iterable<Token> {
@@ -15,12 +15,14 @@ public class TreeSitterNativeHighlightLexer {
         private final int[] tokenLengths;
         private final short[] nodeKinds;
         private final short[] captureIds;
+        private final long[] languageIds;
 
-        Tokens(int startOffset, int[] tokenLengths, short[] nodeKinds, short[] captureIds) {
+        Tokens(int startOffset, int[] tokenLengths, short[] nodeKinds, short[] captureIds, long[] languageIds) {
             this.startOffset = startOffset;
             this.tokenLengths = tokenLengths;
             this.nodeKinds = nodeKinds;
             this.captureIds = captureIds;
+            this.languageIds = languageIds;
         }
 
         @Override
@@ -39,7 +41,7 @@ public class TreeSitterNativeHighlightLexer {
                     if (!hasNext()) {
                         throw new NoSuchElementException();
                     }
-                    var token = new Token(tokenOffset, tokenOffset + tokenLengths[index], captureIds[index], nodeKinds[index]);
+                    var token = new Token(tokenOffset, tokenOffset + tokenLengths[index], captureIds[index], nodeKinds[index], languageIds[index]);
                     tokenOffset += tokenLengths[index];
                     index++;
                     return token;

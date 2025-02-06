@@ -45,11 +45,6 @@ class SyntaxSnapshot(
         return SyntaxSnapshot(snapshot, language, timestamp)
     }
 
-    fun applyEdit(edit: InputEdit, newTimestamp: Long): SyntaxSnapshot {
-        val newSnapshot = snapshot.withEdit(edit)
-        return SyntaxSnapshot(newSnapshot, language, newTimestamp)
-    }
-
     fun getIndentRanges(text: CharSequence, startOffset: Int, endOffset: Int): Iterable<Range> {
         return TreeSitterNativeRangesProvider.getIndentRanges(snapshot, text, startOffset, endOffset, true).asIterable()
     }
@@ -71,24 +66,19 @@ class SyntaxSnapshot(
 
     companion object {
         @JvmStatic
-        fun getChangedRanges(oldSnapshot: SyntaxSnapshot, newSnapshot: SyntaxSnapshot): Iterable<Range> {
-            if (oldSnapshot.timestamp != newSnapshot.timestamp) {
-                throw IllegalArgumentException("New snapshot must be created from the old snapshot")
-            }
-            return TreeSitterNativeSyntaxSnapshot.getChangedRanges(oldSnapshot.snapshot, newSnapshot.snapshot)
-                .asIterable()
-        }
-
-        @JvmStatic
         fun parse(text: CharSequence, language: Language, timestamp: Long?): SyntaxSnapshot? {
             val nativeSnapshot = TreeSitterNativeSyntaxSnapshot.parse(text, language) ?: return null
             return SyntaxSnapshot(nativeSnapshot, language, timestamp)
         }
 
         @JvmStatic
-        fun parse(text: CharSequence, oldSnapshot: SyntaxSnapshot): SyntaxSnapshot? {
-            val nativeSnapshot = TreeSitterNativeSyntaxSnapshot.parse(text, oldSnapshot.snapshot) ?: return null
-            return SyntaxSnapshot(nativeSnapshot, oldSnapshot.language, oldSnapshot.timestamp)
+        fun parse(
+            text: CharSequence, oldSnapshot: SyntaxSnapshot, edit: InputEdit, newTimestamp: Long
+        ): Pair<SyntaxSnapshot, Iterable<Range>>? {
+            val (nativeSnapshot, changedRanges) = TreeSitterNativeSyntaxSnapshot.parse(text, oldSnapshot.snapshot, edit)
+                ?: return null
+            val newSnapshot = SyntaxSnapshot(nativeSnapshot, oldSnapshot.language, newTimestamp)
+            return Pair(newSnapshot, changedRanges.asIterable())
         }
     }
 }

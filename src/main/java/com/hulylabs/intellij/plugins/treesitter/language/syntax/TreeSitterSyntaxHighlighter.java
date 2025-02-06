@@ -5,7 +5,6 @@ import com.hulylabs.treesitter.language.Language;
 import com.hulylabs.treesitter.rusty.TreeSitterNativeHighlightLexer;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.psi.tree.IElementType;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,17 +37,6 @@ public class TreeSitterSyntaxHighlighter {
 
     public Language getLanguage() {
         return language;
-    }
-
-    public TextAttributesKey @NotNull [] getTokenHighlights(IElementType tokenType) {
-        if (tokenType instanceof TreeSitterCaptureElementType) {
-            TreeSitterCaptureElementType treeSitterElementType = (TreeSitterCaptureElementType) tokenType;
-            TextAttributesKey[] symbolAttributes = this.attributes.get(treeSitterElementType.getGroupId());
-            if (symbolAttributes != null) {
-                return symbolAttributes;
-            }
-        }
-        return EMPTY_ARRAY;
     }
 
     public IElementType getTokenType(TreeSitterNativeHighlightLexer.Token token) {

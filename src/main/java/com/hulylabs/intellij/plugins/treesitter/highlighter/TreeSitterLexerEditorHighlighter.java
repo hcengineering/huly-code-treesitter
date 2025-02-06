@@ -4,12 +4,10 @@
 package com.hulylabs.intellij.plugins.treesitter.highlighter;
 
 import com.hulylabs.intellij.plugins.treesitter.TreeSitterStorageUtil;
+import com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterHighlightingColors;
 import com.hulylabs.intellij.plugins.treesitter.language.syntax.TreeSitterCaptureElementType;
 import com.hulylabs.intellij.plugins.treesitter.language.syntax.TreeSitterSyntaxHighlighter;
-import com.hulylabs.treesitter.language.InputEdit;
-import com.hulylabs.treesitter.language.Language;
-import com.hulylabs.treesitter.language.Point;
-import com.hulylabs.treesitter.language.SyntaxSnapshot;
+import com.hulylabs.treesitter.language.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
@@ -38,8 +36,8 @@ import java.util.function.IntConsumer;
 
 public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, PrioritizedDocumentListener {
     private EditorColorsScheme myScheme;
-    @NotNull
-    private final TreeSitterSyntaxHighlighter myHighlighter;
+    private Language myBaseLanguage;
+    private HashMap<Long, TreeSitterSyntaxHighlighter> highlighters = new HashMap<>();
     private HighlighterClient myEditor;
     private CharSequence myText;
     private SegmentArrayWithData mySegments;
@@ -51,7 +49,8 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
     private static class DataHolder extends UserDataHolderBase { }
 
     public TreeSitterLexerEditorHighlighter(Language language, EditorColorsScheme scheme) {
-        myHighlighter = new TreeSitterSyntaxHighlighter(language);
+        myBaseLanguage = language;
+        highlighters.put(language.getNativeLanguageId(), new TreeSitterSyntaxHighlighter(language));
         mySegments = createSegments();
         myScheme = scheme;
     }
@@ -172,15 +171,15 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
             return;
         }
         myText = text;
-        var editedSnapshot = snapshot.applyEdit(edit, document.getModificationStamp());
-        var newSnapshot = SyntaxSnapshot.parse(text, editedSnapshot);
+        var parseResult = SyntaxSnapshot.parse(text, snapshot, edit, document.getModificationStamp());
         var rangeStart = eventOffset;
         var rangeEnd = edit.getNewEndOffset();
-        if (newSnapshot == null) {
+        if (parseResult == null) {
             return;
         }
+        var newSnapshot = parseResult.component1();
+        var changedRanges = parseResult.component2();
         TreeSitterStorageUtil.INSTANCE.setCurrentSnapshot(document, newSnapshot);
-        var changedRanges = SyntaxSnapshot.getChangedRanges(editedSnapshot, newSnapshot);
         for (var range : changedRanges) {
             if (range.getStartOffset() < rangeStart) {
                 rangeStart = range.getStartOffset();
@@ -199,8 +198,15 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
                     invalidatedStart = token.startOffset();
                 }
                 invalidatedEnd = token.endOffset();
-                var elementType = myHighlighter.getTokenType(token);
-                int data = mySegments.packData(elementType, 0, true);
+                var highlighter = getHighlighter(token.languageId());
+                IElementType elementType;
+                if (highlighter != null) {
+                    elementType = highlighter.getTokenType(token);
+
+                } else {
+                    elementType = TreeSitterCaptureElementType.NONE;
+                }
+                int data = mySegments.packData(elementType, (int) token.languageId(), true);
                 insertSegments.setElementAt(insertSegments.getSegmentCount(), token.startOffset(), token.endOffset(), data);
             }
             int shift = edit.getNewEndOffset() - edit.getOldEndOffset();
@@ -249,6 +255,19 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
         }
     }
 
+    private TreeSitterSyntaxHighlighter getHighlighter(long languageId) {
+        if (highlighters.containsKey(languageId)) {
+            return highlighters.get(languageId);
+        }
+        var language = ApplicationManager.getApplication().getService(LanguageRegistry.class).getNativeLanguage(languageId);
+        if (language == null) {
+            return null;
+        }
+        TreeSitterSyntaxHighlighter highlighter = new TreeSitterSyntaxHighlighter(language);
+        highlighters.put(languageId, highlighter);
+        return highlighter;
+    }
+
     @Override
     public void setText(@NotNull CharSequence text) {
         synchronized (this) {
@@ -260,13 +279,12 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
         if (Comparing.equal(myText, text)) return;
         text = ImmutableCharSequence.asImmutable(text);
         int textLength = text.length();
-        Language language = myHighlighter.getLanguage();
 
         SegmentArrayWithData tempSegments = createSegments();
         Document document = getDocument();
         UserDataHolder activeDataHolder = document != null ? document : dataHolder;
         Long timestamp = document != null ? document.getModificationStamp() : null;
-        var newSnapshot = SyntaxSnapshot.parse(text, language, timestamp);
+        var newSnapshot = SyntaxSnapshot.parse(text, myBaseLanguage, timestamp);
         if (newSnapshot == null) {
             return;
         }
@@ -275,7 +293,14 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
         if (tokens != null) {
             int i = 0;
             for (var token : tokens) {
-                var elementType = myHighlighter.getTokenType(token);
+                var highlighter = getHighlighter(token.languageId());
+                IElementType elementType;
+                if (highlighter != null) {
+                    elementType = highlighter.getTokenType(token);
+
+                } else {
+                    elementType = TreeSitterCaptureElementType.NONE;
+                }
                 int data = tempSegments.packData(elementType, 0, true);
                 tempSegments.setElementAt(i, token.startOffset(), token.endOffset(), data);
                 i++;
@@ -327,7 +352,14 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
     private TextAttributesKey @NotNull [] getAttributesKeys(@NotNull IElementType tokenType) {
         TextAttributesKey[] attributesKeys = myKeysMap.get(tokenType);
         if (attributesKeys == null) {
-            attributesKeys = myHighlighter.getTokenHighlights(tokenType);
+            if (tokenType instanceof TreeSitterCaptureElementType) {
+                TreeSitterHighlightingColors colors = TreeSitterHighlightingColors.getInstance();
+                TreeSitterCaptureElementType treeSitterElementType = (TreeSitterCaptureElementType) tokenType;
+                var groupName = treeSitterElementType.getGroupName();
+                attributesKeys = new TextAttributesKey[] {colors.getTextAttributesKey(groupName)};
+            } else {
+                attributesKeys = new TextAttributesKey[0];
+            }
             myKeysMap.put(tokenType, attributesKeys);
         }
         return attributesKeys;

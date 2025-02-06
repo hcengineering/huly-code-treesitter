@@ -21,6 +21,7 @@ class LanguageRegistry(
     private val LOG = Logger.getInstance(LanguageRegistry::class.java)
     private val extensions = HashMap<String, String>()
     private val languages = HashMap<String, Language>()
+    private val nativeLanguages = HashMap<Long, Language>()
 
     init {
         coroutineScope.launch {
@@ -59,6 +60,7 @@ class LanguageRegistry(
 
                     language.nativeHighlights = registry.addHighlightQuery(language, highlightsData)
                     languages[languageName] = language
+                    nativeLanguages[language.nativeLanguageId] = language
                     launch {
                         val queryData = withContext(Dispatchers.IO) {
                             Language::class.java.getResource("/queries/$languageName/indents.scm")?.readBytes()
@@ -96,5 +98,9 @@ class LanguageRegistry(
 
     fun getLanguage(extension: String): Language? {
         return extensions[extension]?.let { languageName -> languages[languageName] }
+    }
+
+    fun getNativeLanguage(languageId: Long): Language? {
+        return nativeLanguages[languageId]
     }
 }
