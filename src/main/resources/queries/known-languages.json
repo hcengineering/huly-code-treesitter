@@ -30,5 +30,9 @@
   "html": {
     "extensions": ["html", "htm"],
     "className": "org.treesitter.TreeSitterHtml"
+  },
+  "go": {
+    "extensions": ["go"],
+    "className": "org.treesitter.TreeSitterGo"
   }
 }
