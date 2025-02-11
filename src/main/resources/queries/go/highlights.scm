@@ -235,3 +235,10 @@
   (comment)+ @comment.documentation
   .
   (var_declaration))
+
+(import_spec
+  path: [
+      (interpreted_string_literal)
+      (raw_string_literal)
+    ] @module
+  !name)
