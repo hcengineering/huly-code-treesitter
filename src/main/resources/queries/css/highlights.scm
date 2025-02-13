@@ -92,18 +92,16 @@
 
 [
   "#"
-  ","
   "."
   ":"
   "::"
-  ";"
 ] @punctuation.delimiter
+"," @punctuation.delimiter.comma
+";" @punctuation.delimiter.semicolon
 
-[
-  "{"
-  ")"
-  "("
-  "}"
-  "["
-  "]"
-] @punctuation.bracket
+"(" @punctuation.bracket.parentheses.left
+")" @punctuation.bracket.parentheses.right
+"[" @punctuation.bracket.left
+"]" @punctuation.bracket.right
+"{" @punctuation.bracket.braces.left
+"}" @punctuation.bracket.braces.right
