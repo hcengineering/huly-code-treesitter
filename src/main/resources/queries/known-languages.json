@@ -34,5 +34,9 @@
   "go": {
     "extensions": ["go"],
     "className": "org.treesitter.TreeSitterGo"
+  },
+  "scss": {
+    "extensions": ["scss"],
+    "className": "org.treesitter.TreeSitterScss"
   }
 }
