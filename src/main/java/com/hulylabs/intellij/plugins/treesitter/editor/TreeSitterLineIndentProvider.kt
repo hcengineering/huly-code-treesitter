@@ -43,6 +43,9 @@ class TreeSitterLineIndentProvider : LineIndentProvider {
         for (range in snapshot.getIndentRanges(
             document.immutableCharSequence, indentRangesStartOffset, indentRangesEndOffset
         )) {
+            if (range.startPoint.row == range.endPoint.row) {
+                continue
+            }
             val searchResult = indentRanges.binarySearchBy(range.startPoint) { it.startPoint }
             if (searchResult >= 0) {
                 val existingRange = indentRanges[searchResult]
