@@ -12,7 +12,6 @@ import com.intellij.openapi.editor.actionSystem.EditorActionHandler
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiFile
 import com.intellij.util.DocumentUtil
-import com.intellij.util.text.CharArrayUtil
 
 class TreeSitterEnterHandler : EnterHandlerDelegate {
     override fun invokeInsideIndent(newLineCharOffset: Int, editor: Editor, dataContext: DataContext): Boolean {
@@ -55,10 +54,8 @@ class TreeSitterEnterHandler : EnterHandlerDelegate {
         val searchStartOffset = DocumentUtil.getLineStartOffset(offset, document)
         val searchEndOffset = DocumentUtil.getLineEndOffset(offset, document)
 
-        val leftOffset = CharArrayUtil.shiftBackward(text, offset, " \t")
-        val rightOffset = CharArrayUtil.shiftForward(text, offset, " \t")
         for (range in snapshot.getIndentRanges(text, searchStartOffset, searchEndOffset)) {
-            if (range.startPoint.row == line && range.startPoint.row == line && range.startOffset == leftOffset && rightOffset == range.endOffset) {
+            if (range.startPoint.row == line && range.endPoint.row == line && range.startOffset <= offset && offset <= range.endOffset) {
                 originalHandler?.execute(editor, editor.caretModel.currentCaret, dataContext)
                 return EnterHandlerDelegate.Result.DefaultForceIndent
             }
