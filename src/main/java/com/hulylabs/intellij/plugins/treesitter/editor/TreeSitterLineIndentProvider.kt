@@ -59,12 +59,9 @@ class TreeSitterLineIndentProvider : LineIndentProvider {
                 indentRanges.add(-(searchResult + 1), range)
             }
         }
-        val indentPoint = Point(
-            line, DocumentUtil.getIndentLength(document, document.getLineStartOffset(line))
-        )
+        val indentPoint = getLineIndentPoint(document,line)
         val previousLine = previousContentLine ?: 0
-        val previousLineIndentPoint =
-            Point(previousLine, DocumentUtil.getIndentLength(document, document.getLineStartOffset(previousLine)))
+        val previousLineIndentPoint = getLineIndentPoint(document, previousLine)
 
         var addIndent = false
         var outdentToLine: Int? = null
@@ -95,5 +92,11 @@ class TreeSitterLineIndentProvider : LineIndentProvider {
 
     override fun isSuitableFor(language: Language?): Boolean {
         return language != null && language is TreeSitterLanguage
+    }
+
+    private fun getLineIndentPoint(document: Document, line: Int): Point {
+        return Point(
+            line, CharArrayUtil.shiftForward(document.immutableCharSequence, document.getLineStartOffset(line), " \t")
+        )
     }
 }
