@@ -104,6 +104,33 @@
   "/>"
 ] @tag.delimiter
 
+(start_tag
+  "<" @tag.constructor.delimiter
+  (
+      (tag_name) @_tag
+      (#match? @_tag "^[A-Z]")
+  )
+  ">" @tag.constructor.delimiter
+)
+
+(self_closing_tag
+  "<" @tag.constructor.delimiter
+  (
+      (tag_name) @_tag
+      (#match? @_tag "^[A-Z]")
+  )
+  "/>" @tag.constructor.delimiter
+)
+
+(end_tag
+  "</" @tag.constructor.delimiter
+  (
+      (tag_name) @_tag
+      (#match? @_tag "^[A-Z]")
+  )
+  ">" @tag.constructor.delimiter
+)
+
 "=" @operator
 
 (doctype) @constant
@@ -177,3 +204,10 @@
 ] @tag.delimiter
 
 (snippet_name) @function
+
+(
+  (attribute
+    (attribute_name) @tag.directive
+  )
+  (#match? @tag.directive "^[a-z]+\\:")
+)

@@ -68,6 +68,8 @@ public class TreeSitterColorSettingsPage implements ColorSettingsPage, DisplayPr
         new AttributesDescriptor("Keyword", TreeSitterHighlightingColors.KEYWORD),
         new AttributesDescriptor("Operator", TreeSitterHighlightingColors.OPERATOR),
         new AttributesDescriptor("Tag", TreeSitterHighlightingColors.TAG),
+        new AttributesDescriptor("Tag//Attribute", TreeSitterHighlightingColors.TAG_ATTRIBUTE),
+        new AttributesDescriptor("Tag//Directive", TreeSitterHighlightingColors.TAG_DIRECTIVE),
         new AttributesDescriptor("Tag//Constructor", TreeSitterHighlightingColors.TAG_CONSTRUCTOR),
         new AttributesDescriptor("Tag//Property", TreeSitterHighlightingColors.TAG_PROPERTY),
 
