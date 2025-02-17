@@ -114,6 +114,31 @@
 
 (raw_text) @none
 
+(
+  (tag_name) @tag.constructor
+  (#match? @tag.constructor "^[A-Z]")
+)
+
+(start_tag
+  (
+    (tag_name) @_tag
+    (#match? @_tag "^[A-Z]")
+  )
+  (attribute
+    (attribute_name) @tag.property
+  )
+)
+
+(self_closing_tag
+  (
+    (tag_name) @_tag
+    (#match? @_tag "^[A-Z]")
+  )
+  (attribute
+    (attribute_name) @tag.property
+  )
+)
+
 [
   "as"
   "key"
@@ -150,3 +175,5 @@
   "/"
   "@"
 ] @tag.delimiter
+
+(snippet_name) @function

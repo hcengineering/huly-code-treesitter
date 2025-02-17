@@ -61,6 +61,8 @@ public class TreeSitterHighlightingColors {
     public static final TextAttributesKey OPERATOR = TextAttributesKey.createTextAttributesKey("ts.capture.operator", DefaultLanguageHighlighterColors.OPERATION_SIGN);
     public static final TextAttributesKey TAG = TextAttributesKey.createTextAttributesKey("ts.capture.tag", DefaultLanguageHighlighterColors.MARKUP_TAG);
     public static final TextAttributesKey TAG_ATTRIBUTE = TextAttributesKey.createTextAttributesKey("ts.capture.tag.attribute", DefaultLanguageHighlighterColors.MARKUP_ATTRIBUTE);
+    public static final TextAttributesKey TAG_CONSTRUCTOR = TextAttributesKey.createTextAttributesKey("ts.capture.tag.constructor", TreeSitterHighlightingColors.CONSTRUCTOR);
+    public static final TextAttributesKey TAG_PROPERTY = TextAttributesKey.createTextAttributesKey("ts.capture.tag.property", TreeSitterHighlightingColors.PROPERTY);
 
     // Punctuation
     public static final TextAttributesKey PUNCTUATION = TextAttributesKey.createTextAttributesKey("ts.capture.punctuation", DefaultLanguageHighlighterColors.DOT);
@@ -150,6 +152,8 @@ public class TreeSitterHighlightingColors {
         addTextAttributesKey(OPERATOR);
         addTextAttributesKey(TAG);
         addTextAttributesKey(TAG_ATTRIBUTE);
+        addTextAttributesKey(TAG_CONSTRUCTOR);
+        addTextAttributesKey(TAG_PROPERTY);
 
         // Punctuation
         addTextAttributesKey(PUNCTUATION);
