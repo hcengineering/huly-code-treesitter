@@ -55,7 +55,7 @@ class TreeSitterEnterHandler : EnterHandlerDelegate {
         val searchEndOffset = DocumentUtil.getLineEndOffset(offset, document)
 
         for (range in snapshot.getIndentRanges(text, searchStartOffset, searchEndOffset)) {
-            if (range.startPoint.row == line && range.endPoint.row == line && range.startOffset <= offset && offset <= range.endOffset) {
+            if (range.startPoint.row == line && range.endPoint.row == line && range.startOffset <= offset && offset < range.endOffset) {
                 originalHandler?.execute(editor, editor.caretModel.currentCaret, dataContext)
                 return EnterHandlerDelegate.Result.DefaultForceIndent
             }
