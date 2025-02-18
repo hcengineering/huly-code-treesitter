@@ -180,6 +180,7 @@
   "if"
   "else"
   "then"
+  "else if"
 ] @keyword.conditional
 
 "each" @keyword.repeat
