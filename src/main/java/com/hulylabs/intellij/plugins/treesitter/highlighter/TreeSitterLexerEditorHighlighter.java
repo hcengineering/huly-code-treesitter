@@ -214,7 +214,7 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
                 setText(text);
             } else {
                 int segmentIndexStart = mySegments.findSegmentIndex(invalidatedStart);
-                int oldEndIndex = mySegments.findSegmentIndex(invalidatedEnd - shift);
+                int oldEndIndex = mySegments.findSegmentIndex(Math.max(0, invalidatedEnd - shift));
                 if (segmentIndexStart < oldEndIndex) {
                     mySegments.shiftSegments(oldEndIndex, shift);
                     mySegments.replace(segmentIndexStart, oldEndIndex, insertSegments);
