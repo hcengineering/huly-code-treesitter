@@ -30,5 +30,6 @@
         <enterHandlerDelegate implementation="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterEnterHandler"/>
         <lang.foldingBuilder language="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterFoldingBuilder"/>
         <codeBlockProvider language="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterCodeBlockProvider"/>
+        <lang.fileViewProviderFactory language="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterFileViewProviderFactory"/>
     </extensions>
 </idea-plugin>

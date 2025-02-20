@@ -64,6 +64,10 @@ class SyntaxSnapshot(
         )
     }
 
+    fun findNodeRangeAt(offset: Int): Range? {
+        return snapshot.findNodeRangeAt(offset)
+    }
+
     companion object {
         @JvmStatic
         fun parse(text: CharSequence, language: Language, timestamp: Long?): SyntaxSnapshot? {
