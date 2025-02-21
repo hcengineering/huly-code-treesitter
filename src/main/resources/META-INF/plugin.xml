@@ -31,5 +31,6 @@
         <lang.foldingBuilder language="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterFoldingBuilder"/>
         <codeBlockProvider language="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterCodeBlockProvider"/>
         <lang.fileViewProviderFactory language="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterFileViewProviderFactory"/>
+        <targetElementEvaluator language="TreeSitter" implementationClass="com.hulylabs.intellij.plugins.treesitter.editor.TreeSitterTargetElementEvaluator"/>
     </extensions>
 </idea-plugin>
