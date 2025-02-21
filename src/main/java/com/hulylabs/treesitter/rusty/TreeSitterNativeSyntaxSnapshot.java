@@ -30,7 +30,7 @@ public class TreeSitterNativeSyntaxSnapshot {
 
     private static native void nativeDestroy(long handle);
 
-    private native @Nullable Range nativeFindNodeRangeAt(int offset);
+    private native @Nullable Pair<Range, Boolean> nativeFindNodeRangeAt(int offset);
 
     public static @Nullable TreeSitterNativeSyntaxSnapshot parse(@NotNull CharSequence text, Language baseLanguage) {
         char[] chars = CharArrayUtil.fromSequence(text);
@@ -42,7 +42,7 @@ public class TreeSitterNativeSyntaxSnapshot {
         return nativeParseWithOld(chars, oldSnapshot, edit);
     }
 
-    public @Nullable Range findNodeRangeAt(int offset) {
+    public @Nullable Pair<Range, Boolean> findNodeRangeAt(int offset) {
         return nativeFindNodeRangeAt(offset);
     }
 

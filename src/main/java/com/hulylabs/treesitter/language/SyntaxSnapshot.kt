@@ -64,7 +64,7 @@ class SyntaxSnapshot(
         )
     }
 
-    fun findNodeRangeAt(offset: Int): Range? {
+    fun findNodeRangeAt(offset: Int): Pair<Range, Boolean>? {
         return snapshot.findNodeRangeAt(offset)
     }
 

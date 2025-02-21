@@ -1,12 +1,16 @@
 package com.hulylabs.intellij.plugins.treesitter.editor
 
 import com.hulylabs.intellij.plugins.treesitter.TreeSitterStorageUtil
+import com.hulylabs.intellij.plugins.treesitter.language.TreeSitterLanguage
+import com.intellij.lang.ASTNode
 import com.intellij.lang.Language
+import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
-import com.intellij.psi.impl.FakePsiElement
+import com.intellij.psi.impl.PsiElementBase
+import javax.swing.Icon
 
 class TreeSitterFileViewProviderFactory : FileViewProviderFactory {
     override fun createFileViewProvider(
@@ -28,30 +32,39 @@ class TreeSitterFileViewProvider(manager: PsiManager, file: VirtualFile, eventSy
             ?: return super.findElementAt(offset)
 
         val psiFile = manager.findFile(virtualFile) ?: return super.findElementAt(offset)
-        val nodeRange = snapshot.findNodeRangeAt(offset) ?: return super.findElementAt(offset)
-        val nodeElementType = TreeSitterFakePsiElement(psiFile, TextRange(nodeRange.startOffset, nodeRange.endOffset))
+        val (nodeRange, named) = snapshot.findNodeRangeAt(offset) ?: return super.findElementAt(offset)
+        val nodeElementType = if (named) {
+            TreeSitterFakePsiElementNamed(psiFile, TextRange(nodeRange.startOffset, nodeRange.endOffset))
+        } else {
+            TreeSitterFakePsiElementUnnamed(psiFile, TextRange(nodeRange.startOffset, nodeRange.endOffset))
+        }
+
         return nodeElementType
     }
 }
 
-class TreeSitterFakePsiElement(val file: PsiFile, val range: TextRange) : FakePsiElement() {
+abstract class TreeSitterFakePsiElementBase(protected val file: PsiFile, protected val range: TextRange) :
+    PsiElementBase(), ItemPresentation {
     var myName: String? = null
 
-    override fun getProject(): Project {
-        return file.project
+    override fun getPresentableText(): String? {
+        return name
     }
 
-    override fun getContainingFile(): PsiFile {
-        return file
+    override fun getIcon(unused: Boolean): Icon? {
+        return null
     }
 
+    override fun getLanguage(): Language {
+        return TreeSitterLanguage.INSTANCE
+    }
+
+    override fun getChildren(): Array<PsiElement> {
+        return PsiElement.EMPTY_ARRAY
+    }
 
     override fun getParent(): PsiElement {
         return file
-    }
-
-    override fun isPhysical(): Boolean {
-        return true
     }
 
     override fun getTextRange(): TextRange {
@@ -62,12 +75,16 @@ class TreeSitterFakePsiElement(val file: PsiFile, val range: TextRange) : FakePs
         return range.startOffset
     }
 
-    override fun getTextOffset(): Int {
-        return range.startOffset
-    }
-
     override fun getTextLength(): Int {
         return range.length
+    }
+
+    override fun findElementAt(offset: Int): PsiElement? {
+        return null
+    }
+
+    override fun getTextOffset(): Int {
+        return range.startOffset
     }
 
     override fun getName(): String? {
@@ -78,20 +95,50 @@ class TreeSitterFakePsiElement(val file: PsiFile, val range: TextRange) : FakePs
         return myName
     }
 
-    override fun setName(name: String): PsiElement {
-        this.myName = name
-        return this
+    override fun getText(): String {
+        return name ?: ""
     }
 
-    override fun getText(): String? {
-        return getName()
+    override fun textToCharArray(): CharArray {
+        return text.toCharArray()
+    }
+
+    override fun getNode(): ASTNode? {
+        return null
+    }
+
+    override fun isPhysical(): Boolean {
+        return true
+    }
+
+    override fun isValid(): Boolean {
+        return true
     }
 
     override fun getLocationString(): String {
         return file.name
     }
 
-    override fun isValid(): Boolean {
-        return true
+    override fun getProject(): Project {
+        return file.project
+    }
+
+    override fun getContainingFile(): PsiFile {
+        return file
+    }
+
+    override fun getManager(): PsiManager {
+        return file.manager
     }
 }
+
+class TreeSitterFakePsiElementNamed(file: PsiFile, range: TextRange) : TreeSitterFakePsiElementBase(file, range),
+    PsiNamedElement {
+    override fun setName(name: String): PsiElement {
+        this.myName = name
+        return this
+    }
+}
+
+class TreeSitterFakePsiElementUnnamed(file: PsiFile, range: TextRange) : TreeSitterFakePsiElementBase(file, range),
+    PsiElement {}
