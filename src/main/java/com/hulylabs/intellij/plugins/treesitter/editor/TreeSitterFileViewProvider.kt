@@ -67,6 +67,22 @@ abstract class TreeSitterFakePsiElementBase(protected val file: PsiFile, protect
         return file
     }
 
+    override fun getFirstChild(): PsiElement? {
+        return null
+    }
+
+    override fun getLastChild(): PsiElement? {
+        return null
+    }
+
+    override fun getPrevSibling(): PsiElement? {
+        return null
+    }
+
+    override fun getNextSibling(): PsiElement? {
+        return null
+    }
+
     override fun getTextRange(): TextRange {
         return range
     }
