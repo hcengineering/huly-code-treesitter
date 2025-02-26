@@ -174,6 +174,10 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
         var parseResult = SyntaxSnapshot.parse(text, snapshot, edit, document.getModificationStamp());
         var rangeStart = eventOffset;
         var rangeEnd = edit.getNewEndOffset();
+        int oldRangeEndIdx = mySegments.findSegmentIndex(edit.getOldEndOffset());
+        if (rangeEnd < mySegments.getSegmentEnd(oldRangeEndIdx)) {
+            rangeEnd = mySegments.getSegmentEnd(oldRangeEndIdx) - edit.getOldEndOffset() + edit.getNewEndOffset();
+        }
         if (parseResult == null) {
             return;
         }
