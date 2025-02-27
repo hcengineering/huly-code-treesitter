@@ -36,9 +36,9 @@ class InputEdit(
 )
 
 class SyntaxSnapshot(
-    internal val snapshot: TreeSitterNativeSyntaxSnapshot, val language: Language, val timestamp: Long?
+    internal val snapshot: TreeSitterNativeSyntaxSnapshot, val language: Language, val timestamp: Int?
 ) {
-    fun withTimestamp(timestamp: Long): SyntaxSnapshot {
+    fun withTimestamp(timestamp: Int): SyntaxSnapshot {
         if (this.timestamp == timestamp) {
             return this
         }
@@ -70,14 +70,14 @@ class SyntaxSnapshot(
 
     companion object {
         @JvmStatic
-        fun parse(text: CharSequence, language: Language, timestamp: Long?): SyntaxSnapshot? {
+        fun parse(text: CharSequence, language: Language, timestamp: Int?): SyntaxSnapshot? {
             val nativeSnapshot = TreeSitterNativeSyntaxSnapshot.parse(text, language) ?: return null
             return SyntaxSnapshot(nativeSnapshot, language, timestamp)
         }
 
         @JvmStatic
         fun parse(
-            text: CharSequence, oldSnapshot: SyntaxSnapshot, edit: InputEdit, newTimestamp: Long
+            text: CharSequence, oldSnapshot: SyntaxSnapshot, edit: InputEdit, newTimestamp: Int
         ): Pair<SyntaxSnapshot, Iterable<Range>>? {
             val (nativeSnapshot, changedRanges) = TreeSitterNativeSyntaxSnapshot.parse(text, oldSnapshot.snapshot, edit)
                 ?: return null

@@ -9,6 +9,7 @@ import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegate
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actionSystem.EditorActionHandler
+import com.intellij.openapi.editor.ex.DocumentEx
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiFile
 import com.intellij.util.DocumentUtil
@@ -39,9 +40,9 @@ class TreeSitterEnterHandler : EnterHandlerDelegate {
         if (!CodeInsightSettings.getInstance().SMART_INDENT_ON_ENTER) {
             return EnterHandlerDelegate.Result.Continue
         }
-        val document = editor.document
+        val document = editor.document as? DocumentEx ?: return EnterHandlerDelegate.Result.Continue
         val text = document.immutableCharSequence
-        val snapshot = TreeSitterStorageUtil.getSnapshotForTimestamp(document, document.modificationStamp)
+        val snapshot = TreeSitterStorageUtil.getSnapshotForTimestamp(document, document.modificationSequence)
             ?: return EnterHandlerDelegate.Result.Continue
 
         val originalOffset = caretOffset.get()

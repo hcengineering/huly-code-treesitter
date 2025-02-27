@@ -13,6 +13,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.editor.event.DocumentEvent;
+import com.intellij.openapi.editor.ex.DocumentEx;
 import com.intellij.openapi.editor.ex.PrioritizedDocumentListener;
 import com.intellij.openapi.editor.ex.util.SegmentArrayWithData;
 import com.intellij.openapi.editor.highlighter.EditorHighlighter;
@@ -45,6 +46,7 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
     private final Map<IElementType, TextAttributesKey[]> myKeysMap = new HashMap<>();
     // Temporary data holder to store the tree before the editor is attached
     private DataHolder dataHolder = new DataHolder();
+    private int myLastModificationSequence = -1;
 
     private static class DataHolder extends UserDataHolderBase { }
 
@@ -88,8 +90,8 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
     public void setEditor(@NotNull HighlighterClient editor) {
         this.myEditor = editor;
         Document document = getDocument();
-        if (document != null && Comparing.equal(myText, document.getImmutableCharSequence())) {
-            TreeSitterStorageUtil.INSTANCE.moveSnapshotToDocument(dataHolder, document);
+        if (document instanceof DocumentEx && Comparing.equal(myText, document.getImmutableCharSequence())) {
+            TreeSitterStorageUtil.INSTANCE.moveSnapshotToDocument(dataHolder, (DocumentEx) document);
         }
     }
 
@@ -112,8 +114,14 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
                 mySegments.removeAll();
                 return;
             }
+            DocumentEx documentEx = document instanceof DocumentEx ? (DocumentEx) document : null;
+            if (documentEx == null) {
+                myText = null;
+                mySegments.removeAll();
+                return;
+            }
             InputEdit edit = toInputEdit(event);
-            incrementalUpdate(document, edit, event.getOldTimeStamp());
+            incrementalUpdate(documentEx, edit, myLastModificationSequence);
         } catch (ProcessCanceledException e) {
             myText = null;
             mySegments.removeAll();
@@ -161,7 +169,7 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
         return new InputEdit(event.getOffset(), (event.getOffset() + event.getOldLength()), (event.getOffset() + event.getNewLength()), startPointCounter.getPoint(), oldEndPointCounter.getPoint(), newEndPointCounter.getPoint());
     }
 
-    private void incrementalUpdate(@NotNull Document document, InputEdit edit, long oldTimestamp) {
+    private void incrementalUpdate(@NotNull DocumentEx document, InputEdit edit, int oldTimestamp) {
         CharSequence text = document.getImmutableCharSequence();
         SyntaxSnapshot snapshot = TreeSitterStorageUtil.INSTANCE.getSnapshotForTimestamp(document, oldTimestamp);
 
@@ -171,7 +179,7 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
             return;
         }
         myText = text;
-        var parseResult = SyntaxSnapshot.parse(text, snapshot, edit, document.getModificationStamp());
+        var parseResult = SyntaxSnapshot.parse(text, snapshot, edit, document.getModificationSequence());
         var rangeStart = eventOffset;
         var rangeEnd = edit.getNewEndOffset();
         int oldRangeEndIdx = mySegments.findSegmentIndex(edit.getOldEndOffset());
@@ -184,6 +192,7 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
         var newSnapshot = parseResult.component1();
         var changedRanges = parseResult.component2();
         TreeSitterStorageUtil.INSTANCE.setCurrentSnapshot(document, newSnapshot);
+        myLastModificationSequence = document.getModificationSequence();
         for (var range : changedRanges) {
             if (range.getStartOffset() < rangeStart) {
                 rangeStart = range.getStartOffset();
@@ -287,7 +296,7 @@ public class TreeSitterLexerEditorHighlighter implements EditorHighlighter, Prio
         SegmentArrayWithData tempSegments = createSegments();
         Document document = getDocument();
         UserDataHolder activeDataHolder = document != null ? document : dataHolder;
-        Long timestamp = document != null ? document.getModificationStamp() : null;
+        Integer timestamp = document instanceof DocumentEx ? ((DocumentEx)document).getModificationSequence() : null;
         var newSnapshot = SyntaxSnapshot.parse(text, myBaseLanguage, timestamp);
         if (newSnapshot == null) {
             return;

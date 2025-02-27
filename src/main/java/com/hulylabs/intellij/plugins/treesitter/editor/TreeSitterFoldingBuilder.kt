@@ -5,20 +5,21 @@ import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilder
 import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.ex.DocumentEx
 import com.intellij.openapi.util.TextRange
 
 class TreeSitterFoldingBuilder : FoldingBuilder {
     override fun buildFoldRegions(node: ASTNode, document: Document): Array<FoldingDescriptor> {
+        val documentEx = document as? DocumentEx ?: return emptyArray()
         val snapshot =
-            TreeSitterStorageUtil.getSnapshotForTimestamp(document, document.modificationStamp) ?: return emptyArray()
+            TreeSitterStorageUtil.getSnapshotForTimestamp(documentEx, documentEx.modificationSequence) ?: return emptyArray()
         val folds = mutableListOf<FoldingDescriptor>()
-        for (range in snapshot.getFoldRanges(document.immutableCharSequence, 0, document.textLength, false)) {
+        for (range in snapshot.getFoldRanges(documentEx.immutableCharSequence, 0, documentEx.textLength, false)) {
             if (range.startOffset == range.endOffset) {
                 continue
             }
             folds.add(FoldingDescriptor(node, TextRange(range.startOffset, range.endOffset)))
         }
-
         return folds.toTypedArray()
     }
 

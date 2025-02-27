@@ -9,6 +9,7 @@ import com.intellij.formatting.IndentInfo
 import com.intellij.lang.Language
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.ex.DocumentEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.codeStyle.lineIndent.LineIndentProvider
@@ -30,9 +31,9 @@ private fun getIndentInfo(
 
 class TreeSitterLineIndentProvider : LineIndentProvider {
     override fun getLineIndent(project: Project, editor: Editor, language: Language?, offset: Int): String? {
-        val snapshot = TreeSitterStorageUtil.getSnapshotForTimestamp(editor.document, editor.document.modificationStamp)
+        val document = editor.document as? DocumentEx ?: return null
+        val snapshot = TreeSitterStorageUtil.getSnapshotForTimestamp(editor.document, document.modificationSequence)
             ?: return null
-        val document = editor.document
         val line = document.getLineNumber(offset)
         val previousContentLine =
             IntProgression.fromClosedRange(line - 1, 0, -1).find { !DocumentUtil.isLineEmpty(document, it) }

@@ -5,6 +5,7 @@ import com.hulylabs.intellij.plugins.treesitter.language.TreeSitterLanguage
 import com.intellij.lang.ASTNode
 import com.intellij.lang.Language
 import com.intellij.navigation.ItemPresentation
+import com.intellij.openapi.editor.ex.DocumentEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VirtualFile
@@ -27,8 +28,8 @@ class TreeSitterFileViewProviderFactory : FileViewProviderFactory {
 class TreeSitterFileViewProvider(manager: PsiManager, file: VirtualFile, eventSystemEnabled: Boolean) :
     SingleRootFileViewProvider(manager, file, eventSystemEnabled) {
     override fun findElementAt(offset: Int): PsiElement? {
-        val currentDocument = document
-        val snapshot = TreeSitterStorageUtil.getSnapshotForTimestamp(currentDocument, currentDocument.modificationStamp)
+        val currentDocument = document as? DocumentEx ?: return super.findElementAt(offset)
+        val snapshot = TreeSitterStorageUtil.getSnapshotForTimestamp(currentDocument, currentDocument.modificationSequence)
             ?: return super.findElementAt(offset)
 
         val psiFile = manager.findFile(virtualFile) ?: return super.findElementAt(offset)
