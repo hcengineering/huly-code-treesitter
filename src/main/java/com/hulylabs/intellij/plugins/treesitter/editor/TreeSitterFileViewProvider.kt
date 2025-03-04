@@ -34,6 +34,9 @@ class TreeSitterFileViewProvider(manager: PsiManager, file: VirtualFile, eventSy
 
         val psiFile = manager.findFile(virtualFile) ?: return super.findElementAt(offset)
         val (nodeRange, named) = snapshot.findNodeRangeAt(offset) ?: return super.findElementAt(offset)
+        if (nodeRange.startOffset >= currentDocument.textLength || nodeRange.endOffset > currentDocument.textLength) {
+            return super.findElementAt(offset)
+        }
         val nodeElementType = if (named) {
             TreeSitterFakePsiElementNamed(psiFile, TextRange(nodeRange.startOffset, nodeRange.endOffset))
         } else {
