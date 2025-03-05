@@ -111,6 +111,9 @@ abstract class TreeSitterFakePsiElementBase(protected val file: PsiFile, protect
         if (myName != null) {
             return myName
         }
+        if (range.startOffset >= file.textLength || range.endOffset > file.textLength) {
+            return null
+        }
         myName = file.text.substring(range.startOffset, range.endOffset)
         return myName
     }
