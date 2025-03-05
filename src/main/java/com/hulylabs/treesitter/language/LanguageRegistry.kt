@@ -8,10 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.*
 import org.treesitter.TSLanguage
 
 @Service
@@ -22,6 +19,15 @@ class LanguageRegistry(
     private val extensions = HashMap<String, String>()
     private val languages = HashMap<String, Language>()
     private val nativeLanguages = HashMap<Long, Language>()
+
+    fun parseCommenterConfig(languageJson: JsonElement): Language.CommenterConfig {
+        val lineCommentPrefix = languageJson.jsonObject["lineCommentPrefix"]?.jsonPrimitive?.content
+        val blockCommentPrefix = languageJson.jsonObject["blockCommentPrefix"]?.jsonPrimitive?.content
+        val blockCommentSuffix = languageJson.jsonObject["blockCommentSuffix"]?.jsonPrimitive?.content
+        val commentedBlockCommentPrefix = languageJson.jsonObject["commentedBlockCommentPrefix"]?.jsonPrimitive?.content
+        val commentedBlockCommentSuffix = languageJson.jsonObject["commentedBlockCommentSuffix"]?.jsonPrimitive?.content
+        return Language.CommenterConfig(lineCommentPrefix, blockCommentPrefix, blockCommentSuffix, commentedBlockCommentPrefix, commentedBlockCommentSuffix)
+    }
 
     init {
         coroutineScope.launch {
@@ -38,7 +44,8 @@ class LanguageRegistry(
             val pluginClassLoader = LanguageRegistry::class.java.classLoader
             for (languageEntry in knownLanguagesJson) {
                 val languageName = languageEntry.key
-                val className = languageEntry.value.jsonObject["className"]?.jsonPrimitive?.content
+                val languageJson = languageEntry.value
+                val className = languageJson.jsonObject["className"]?.jsonPrimitive?.content
                 if (className == null) {
                     LOG.warn("No className found for $languageName")
                     continue
@@ -56,7 +63,9 @@ class LanguageRegistry(
                     val tsLanguage = constructor.newInstance() as TSLanguage
                     val registry =
                         ApplicationManager.getApplication().getService(TreeSitterNativeLanguageRegistry::class.java)
-                    val language = Language(languageName, registry.registerLanguage(languageName, tsLanguage))
+                    val commenterConfig = parseCommenterConfig(languageJson)
+                    val language =
+                        Language(languageName, registry.registerLanguage(languageName, tsLanguage), commenterConfig)
 
                     language.nativeHighlights = registry.addHighlightQuery(language, highlightsData)
                     languages[languageName] = language

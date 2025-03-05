@@ -1,42 +1,72 @@
 {
   "rust": {
     "extensions": ["rs"],
-    "className": "org.treesitter.TreeSitterRust"
+    "className": "org.treesitter.TreeSitterRust",
+    "lineCommentPrefix": "//",
+    "blockCommentPrefix": "/*",
+    "blockCommentSuffix": "*/"
   },
   "zig": {
     "extensions": ["zig"],
-    "className": "org.treesitter.TreeSitterZig"
+    "className": "org.treesitter.TreeSitterZig",
+    "lineCommentPrefix": "//"
   },
   "typescript": {
     "extensions": ["ts"],
-    "className": "org.treesitter.TreeSitterTypescript"
+    "className": "org.treesitter.TreeSitterTypescript",
+    "lineCommentPrefix": "//",
+    "blockCommentPrefix": "/*",
+    "blockCommentSuffix": "*/"
   },
   "javascript": {
     "extensions": ["js", "jsx"],
-    "className": "org.treesitter.TreeSitterJavascript"
+    "className": "org.treesitter.TreeSitterJavascript",
+    "lineCommentPrefix": "//",
+    "blockCommentPrefix": "/*",
+    "blockCommentSuffix": "*/"
   },
   "svelte": {
     "extensions": ["svelte"],
-    "className": "org.treesitter.TreeSitterSvelte"
+    "className": "org.treesitter.TreeSitterSvelte",
+    "blockCommentPrefix": "<!--",
+    "blockCommentSuffix": "-->",
+    "commentedBlockCommentPrefix": "&lt;!&ndash;",
+    "commentedBlockCommentSuffix": "&ndash;&gt;"
   },
   "astro": {
     "extensions": ["astro"],
-    "className": "org.treesitter.TreeSitterAstro"
+    "className": "org.treesitter.TreeSitterAstro",
+    "blockCommentPrefix": "<!--",
+    "blockCommentSuffix": "-->",
+    "commentedBlockCommentPrefix": "&lt;!&ndash;",
+    "commentedBlockCommentSuffix": "&ndash;&gt;"
   },
   "css": {
     "extensions": ["css"],
-    "className": "org.treesitter.TreeSitterCss"
+    "className": "org.treesitter.TreeSitterCss",
+    "blockCommentPrefix": "/*",
+    "blockCommentSuffix": "*/"
   },
   "html": {
     "extensions": ["html", "htm"],
-    "className": "org.treesitter.TreeSitterHtml"
+    "className": "org.treesitter.TreeSitterHtml",
+    "blockCommentPrefix": "<!--",
+    "blockCommentSuffix": "-->",
+    "commentedBlockCommentPrefix": "&lt;!&ndash;",
+    "commentedBlockCommentSuffix": "&ndash;&gt;"
   },
   "go": {
     "extensions": ["go"],
-    "className": "org.treesitter.TreeSitterGo"
+    "className": "org.treesitter.TreeSitterGo",
+    "lineCommentPrefix": "//",
+    "blockCommentPrefix": "/*",
+    "blockCommentSuffix": "*/"
   },
   "scss": {
     "extensions": ["scss"],
-    "className": "org.treesitter.TreeSitterScss"
+    "className": "org.treesitter.TreeSitterScss",
+    "lineCommentPrefix": "//",
+    "blockCommentPrefix": "/*",
+    "blockCommentSuffix": "*/"
   }
 }
