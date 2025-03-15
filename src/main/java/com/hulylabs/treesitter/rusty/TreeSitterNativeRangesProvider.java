@@ -1,6 +1,7 @@
 package com.hulylabs.treesitter.rusty;
 
 
+import com.hulylabs.treesitter.language.FoldRange;
 import com.hulylabs.treesitter.language.Point;
 import com.hulylabs.treesitter.language.Range;
 import com.intellij.util.text.CharArrayUtil;
@@ -15,14 +16,14 @@ public class TreeSitterNativeRangesProvider {
         return nativeGetIndentRanges(snapshot, chars, startOffset, endOffset, useInner);
     }
 
-    public static Range @NotNull [] getFoldRanges(@NotNull TreeSitterNativeSyntaxSnapshot snapshot, @NotNull CharSequence text, int startOffset, int endOffset, boolean useInner) {
+    public static FoldRange @NotNull [] getFoldRanges(@NotNull TreeSitterNativeSyntaxSnapshot snapshot, @NotNull CharSequence text, int startOffset, int endOffset, boolean useInner) {
         char[] chars = CharArrayUtil.fromSequence(text);
         return nativeGetFoldRanges(snapshot, chars, startOffset, endOffset, useInner);
     }
 
     private static native Range[] nativeGetIndentRanges(TreeSitterNativeSyntaxSnapshot snapshot, char[] text, int startOffset, int endOffset, boolean useInner);
 
-    private static native Range[] nativeGetFoldRanges(TreeSitterNativeSyntaxSnapshot snapshot, char[] text, int startOffset, int endOffset, boolean useInner);
+    private static native FoldRange[] nativeGetFoldRanges(TreeSitterNativeSyntaxSnapshot snapshot, char[] text, int startOffset, int endOffset, boolean useInner);
 
     public static class Ranges implements Iterable<Range> {
         private final int[] startOffsets;

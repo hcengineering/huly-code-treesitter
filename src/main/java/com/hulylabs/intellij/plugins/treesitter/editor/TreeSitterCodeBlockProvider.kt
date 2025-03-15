@@ -17,7 +17,7 @@ class TreeSitterCodeBlockProvider : CodeBlockProvider {
         var minRange: TextRange? = null
         val text = document.immutableCharSequence
         for (range in snapshot.getFoldRanges(text, offset, offset)) {
-            val newRange = TextRange(range.startOffset, range.endOffset)
+            val newRange = TextRange(range.range.startOffset, range.range.endOffset)
             if (minRange == null || minRange.contains(newRange)) {
                 minRange = newRange
                 continue

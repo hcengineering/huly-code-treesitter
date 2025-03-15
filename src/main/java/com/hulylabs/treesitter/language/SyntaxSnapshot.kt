@@ -26,6 +26,8 @@ class Point(val row: Int, val column: Int) : Comparable<Point> {
 
 class Range(val startOffset: Int, val endOffset: Int, val startPoint: Point, val endPoint: Point)
 
+class FoldRange(val range: Range, val collapsedText: String?, val collapsedByDefault: Boolean)
+
 class InputEdit(
     val startOffset: Int,
     val oldEndOffset: Int,
@@ -51,7 +53,7 @@ class SyntaxSnapshot(
 
     fun getFoldRanges(
         text: CharSequence, startOffset: Int, endOffset: Int, useInner: Boolean = true
-    ): Iterable<Range> {
+    ): Iterable<FoldRange> {
         return TreeSitterNativeRangesProvider.getFoldRanges(snapshot, text, startOffset, endOffset, useInner)
             .asIterable()
     }

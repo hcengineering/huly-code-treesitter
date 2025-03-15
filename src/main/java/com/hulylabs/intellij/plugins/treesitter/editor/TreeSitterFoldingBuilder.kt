@@ -15,16 +15,26 @@ class TreeSitterFoldingBuilder : FoldingBuilder {
             TreeSitterStorageUtil.getSnapshotForTimestamp(documentEx, documentEx.modificationSequence) ?: return emptyArray()
         val folds = mutableListOf<FoldingDescriptor>()
         for (range in snapshot.getFoldRanges(documentEx.immutableCharSequence, 0, documentEx.textLength, false)) {
-            if (range.startOffset == range.endOffset) {
+            if (range.range.startPoint.row == range.range.endPoint.row) {
                 continue
             }
-            folds.add(FoldingDescriptor(node, TextRange(range.startOffset, range.endOffset)))
+            folds.add(
+                FoldingDescriptor(
+                    node,
+                    TextRange(range.range.startOffset, range.range.endOffset),
+                    null,
+                    emptySet(),
+                    false,
+                    range.collapsedText,
+                    range.collapsedByDefault,
+                )
+            )
         }
         return folds.toTypedArray()
     }
 
-    override fun getPlaceholderText(node: ASTNode): String? {
-        return "{ ... }"
+    override fun getPlaceholderText(node: ASTNode): String {
+        return "..."
     }
 
     override fun isCollapsedByDefault(node: ASTNode): Boolean {
