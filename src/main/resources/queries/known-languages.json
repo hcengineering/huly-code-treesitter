@@ -68,5 +68,10 @@
     "lineCommentPrefix": "//",
     "blockCommentPrefix": "/*",
     "blockCommentSuffix": "*/"
+  },
+  "python": {
+    "extensions": ["py", "pyi", "mpy"],
+    "className": "org.treesitter.TreeSitterPython",
+    "lineCommentPrefix": "# "
   }
 }
